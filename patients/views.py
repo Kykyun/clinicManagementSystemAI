@@ -9,6 +9,7 @@ import uuid
 from .models import Patient, Visit, Consultation, Prescription, Appointment, LabResult, Immunization
 from .forms import PatientForm, VisitForm, ConsultationForm, PrescriptionForm, AppointmentForm, LabResultForm, ImmunizationForm
 from accounts.models import User
+from accounts.decorators import doctor_required, clinical_staff_required, reception_or_higher
 
 
 def generate_patient_id():
@@ -34,6 +35,7 @@ def patient_list(request):
 
 
 @login_required
+@reception_or_higher
 def patient_create(request):
     if request.method == 'POST':
         form = PatientForm(request.POST)
@@ -62,6 +64,7 @@ def patient_detail(request, pk):
 
 
 @login_required
+@reception_or_higher
 def patient_edit(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
     if request.method == 'POST':
@@ -76,6 +79,7 @@ def patient_edit(request, pk):
 
 
 @login_required
+@clinical_staff_required
 def patient_history(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
     visits = patient.visits.all()
@@ -97,6 +101,7 @@ def visit_list(request):
 
 
 @login_required
+@reception_or_higher
 def visit_create(request, patient_id=None):
     initial = {}
     if patient_id:
@@ -129,6 +134,7 @@ def visit_detail(request, pk):
 
 
 @login_required
+@doctor_required
 def consultation_create(request, visit_id):
     visit = get_object_or_404(Visit, pk=visit_id)
     if hasattr(visit, 'consultation'):
@@ -151,6 +157,7 @@ def consultation_create(request, visit_id):
 
 
 @login_required
+@clinical_staff_required
 def consultation_detail(request, pk):
     consultation = get_object_or_404(Consultation, pk=pk)
     prescriptions = consultation.prescriptions.all()
@@ -158,6 +165,7 @@ def consultation_detail(request, pk):
 
 
 @login_required
+@doctor_required
 def consultation_edit(request, pk):
     consultation = get_object_or_404(Consultation, pk=pk)
     if request.method == 'POST':
@@ -172,6 +180,7 @@ def consultation_edit(request, pk):
 
 
 @login_required
+@doctor_required
 def prescription_add(request, consultation_id):
     consultation = get_object_or_404(Consultation, pk=consultation_id)
     if request.method == 'POST':
@@ -206,6 +215,7 @@ def appointment_list(request):
 
 
 @login_required
+@reception_or_higher
 def appointment_create(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
@@ -222,6 +232,7 @@ def appointment_create(request):
 
 
 @login_required
+@reception_or_higher
 def appointment_edit(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     if request.method == 'POST':
@@ -237,6 +248,7 @@ def appointment_edit(request, pk):
 
 
 @login_required
+@reception_or_higher
 def appointment_status(request, pk, status):
     appointment = get_object_or_404(Appointment, pk=pk)
     if status in ['completed', 'cancelled', 'no_show']:
@@ -278,6 +290,7 @@ def calendar_events(request):
 
 
 @login_required
+@clinical_staff_required
 def complete_visit(request, pk):
     visit = get_object_or_404(Visit, pk=pk)
     visit.status = 'completed'

@@ -38,3 +38,8 @@ externalPort = 80
 [[ports]]
 localPort = 35387
 externalPort = 3000
+
+[userenv]
+
+[userenv.development]
+DEBUG = "True"

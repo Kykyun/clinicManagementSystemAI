@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, F
 from .models import Medicine, LabTest, Allergy, Disposable, Room, Fee, Panel
 from .forms import MedicineForm, LabTestForm, AllergyForm, DisposableForm, RoomForm, FeeForm, PanelForm
 from accounts.models import AuditLog
+from accounts.decorators import admin_or_hq_required, admin_required
 
 
 @login_required
@@ -21,12 +22,13 @@ def medicine_list(request):
         )
     
     if show_low_stock:
-        medicines = medicines.filter(stock_quantity__lte=models.F('minimum_stock'))
+        medicines = medicines.filter(stock_quantity__lte=F('minimum_stock'))
     
     return render(request, 'setup/medicine_list.html', {'medicines': medicines, 'query': query})
 
 
 @login_required
+@admin_or_hq_required
 def medicine_create(request):
     if request.method == 'POST':
         form = MedicineForm(request.POST)
@@ -47,6 +49,7 @@ def medicine_create(request):
 
 
 @login_required
+@admin_or_hq_required
 def medicine_edit(request, pk):
     medicine = get_object_or_404(Medicine, pk=pk)
     if request.method == 'POST':
@@ -74,6 +77,7 @@ def lab_test_list(request):
 
 
 @login_required
+@admin_or_hq_required
 def lab_test_create(request):
     if request.method == 'POST':
         form = LabTestForm(request.POST)
@@ -87,6 +91,7 @@ def lab_test_create(request):
 
 
 @login_required
+@admin_or_hq_required
 def lab_test_edit(request, pk):
     lab_test = get_object_or_404(LabTest, pk=pk)
     if request.method == 'POST':
@@ -107,6 +112,7 @@ def allergy_list(request):
 
 
 @login_required
+@admin_or_hq_required
 def allergy_create(request):
     if request.method == 'POST':
         form = AllergyForm(request.POST)
@@ -126,6 +132,7 @@ def disposable_list(request):
 
 
 @login_required
+@admin_or_hq_required
 def disposable_create(request):
     if request.method == 'POST':
         form = DisposableForm(request.POST)
@@ -139,6 +146,7 @@ def disposable_create(request):
 
 
 @login_required
+@admin_or_hq_required
 def disposable_edit(request, pk):
     disposable = get_object_or_404(Disposable, pk=pk)
     if request.method == 'POST':
@@ -159,6 +167,7 @@ def room_list(request):
 
 
 @login_required
+@admin_or_hq_required
 def room_create(request):
     if request.method == 'POST':
         form = RoomForm(request.POST)
@@ -178,6 +187,7 @@ def fee_list(request):
 
 
 @login_required
+@admin_or_hq_required
 def fee_create(request):
     if request.method == 'POST':
         form = FeeForm(request.POST)
@@ -191,6 +201,7 @@ def fee_create(request):
 
 
 @login_required
+@admin_or_hq_required
 def fee_edit(request, pk):
     fee = get_object_or_404(Fee, pk=pk)
     if request.method == 'POST':
@@ -211,6 +222,7 @@ def panel_list(request):
 
 
 @login_required
+@admin_or_hq_required
 def panel_create(request):
     if request.method == 'POST':
         form = PanelForm(request.POST)
@@ -224,6 +236,7 @@ def panel_create(request):
 
 
 @login_required
+@admin_or_hq_required
 def panel_edit(request, pk):
     panel = get_object_or_404(Panel, pk=pk)
     if request.method == 'POST':
@@ -238,13 +251,7 @@ def panel_edit(request, pk):
 
 
 @login_required
+@admin_required
 def audit_log_list(request):
-    if request.user.role not in ['admin']:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('management_app:dashboard')
-    
     logs = AuditLog.objects.all()[:100]
     return render(request, 'setup/audit_log_list.html', {'logs': logs})
-
-
-from django.db import models

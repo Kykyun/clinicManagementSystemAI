@@ -3,11 +3,20 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SESSION_SECRET', 'django-insecure-dev-key-change-in-production')
+SECRET_KEY = os.environ.get('SESSION_SECRET')
+if not SECRET_KEY:
+    raise ValueError("SESSION_SECRET environment variable must be set")
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '')
+    if allowed_hosts_env:
+        ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+    else:
+        ALLOWED_HOSTS = ['.replit.dev', '.repl.co']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -92,3 +101,8 @@ LOGIN_REDIRECT_URL = 'management_app:dashboard'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
 CSRF_TRUSTED_ORIGINS = ['https://*.replit.dev', 'https://*.repl.co']
+
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'SAMEORIGIN'

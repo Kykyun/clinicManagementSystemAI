@@ -10,6 +10,7 @@ from .models import Invoice, InvoiceItem, Payment, Supplier, StockOrder, StockOr
 from .forms import InvoiceForm, InvoiceItemForm, PaymentForm, SupplierForm, StockOrderForm, StockOrderItemForm, PanelClaimForm
 from patients.models import Visit
 from setup_app.models import Panel
+from accounts.decorators import finance_access_required, admin_or_hq_required
 
 
 def generate_invoice_number():
@@ -25,6 +26,7 @@ def generate_claim_number():
 
 
 @login_required
+@finance_access_required
 def invoice_list(request):
     status_filter = request.GET.get('status', '')
     invoices = Invoice.objects.all()
@@ -34,6 +36,7 @@ def invoice_list(request):
 
 
 @login_required
+@finance_access_required
 def invoice_create(request, visit_id=None):
     initial = {}
     visit = None
@@ -59,6 +62,7 @@ def invoice_create(request, visit_id=None):
 
 
 @login_required
+@finance_access_required
 def invoice_detail(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     items = invoice.items.all()
@@ -67,6 +71,7 @@ def invoice_detail(request, pk):
 
 
 @login_required
+@finance_access_required
 def invoice_items(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     if request.method == 'POST':
@@ -88,6 +93,7 @@ def invoice_items(request, pk):
 
 
 @login_required
+@finance_access_required
 def invoice_finalize(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     invoice.subtotal = sum(i.total for i in invoice.items.all())
@@ -99,6 +105,7 @@ def invoice_finalize(request, pk):
 
 
 @login_required
+@finance_access_required
 def payment_create(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
     if request.method == 'POST':
@@ -116,12 +123,14 @@ def payment_create(request, invoice_id):
 
 
 @login_required
+@finance_access_required
 def supplier_list(request):
     suppliers = Supplier.objects.filter(is_active=True)
     return render(request, 'finance/supplier_list.html', {'suppliers': suppliers})
 
 
 @login_required
+@finance_access_required
 def supplier_create(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -135,6 +144,7 @@ def supplier_create(request):
 
 
 @login_required
+@finance_access_required
 def supplier_edit(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'POST':
@@ -149,12 +159,14 @@ def supplier_edit(request, pk):
 
 
 @login_required
+@finance_access_required
 def stock_order_list(request):
     orders = StockOrder.objects.all().order_by('-order_date')
     return render(request, 'finance/stock_order_list.html', {'orders': orders})
 
 
 @login_required
+@finance_access_required
 def stock_order_create(request):
     if request.method == 'POST':
         form = StockOrderForm(request.POST)
@@ -171,6 +183,7 @@ def stock_order_create(request):
 
 
 @login_required
+@finance_access_required
 def stock_order_items(request, pk):
     order = get_object_or_404(StockOrder, pk=pk)
     if request.method == 'POST':
@@ -190,6 +203,7 @@ def stock_order_items(request, pk):
 
 
 @login_required
+@finance_access_required
 def stock_order_status(request, pk, status):
     order = get_object_or_404(StockOrder, pk=pk)
     if status in ['ordered', 'shipped', 'delivered', 'cancelled']:
@@ -209,12 +223,14 @@ def stock_order_status(request, pk, status):
 
 
 @login_required
+@finance_access_required
 def panel_claim_list(request):
     claims = PanelClaim.objects.all().order_by('-created_at')
     return render(request, 'finance/panel_claim_list.html', {'claims': claims})
 
 
 @login_required
+@finance_access_required
 def panel_claim_create(request):
     if request.method == 'POST':
         form = PanelClaimForm(request.POST)
@@ -231,6 +247,7 @@ def panel_claim_create(request):
 
 
 @login_required
+@finance_access_required
 def eod_report(request):
     report_date = request.GET.get('date', timezone.now().date().isoformat())
     
@@ -252,6 +269,7 @@ def eod_report(request):
 
 
 @login_required
+@finance_access_required
 def eod_generate(request):
     report_date = request.POST.get('date', timezone.now().date().isoformat())
     payments = Payment.objects.filter(payment_date__date=report_date)
@@ -275,6 +293,7 @@ def eod_generate(request):
 
 
 @login_required
+@finance_access_required
 def credit_payment_list(request):
     invoices = Invoice.objects.filter(status__in=['pending', 'partial']).order_by('-invoice_date')
     return render(request, 'finance/credit_payment_list.html', {'invoices': invoices})
