@@ -1,0 +1,321 @@
+Here’s a ready-to-use prompt you can copy–paste into another AI/code generator.
+I’ll keep all the modules and features you listed, and frame them clearly.
+
+---
+
+**PROMPT TO GENERATE A CLINIC MANAGEMENT SYSTEM (DJANGO/FLASK)**
+
+You are an expert senior full-stack engineer.
+Build a **web-based Clinic Management System** using **Python** with either **Django** (preferred) or **Flask** as the backend framework.
+
+---
+
+### 1. General Requirements
+
+* Tech stack:
+
+  * Backend: Python (Django preferred, otherwise Flask)
+  * Frontend: HTML5, CSS, JavaScript (you may use Bootstrap or similar)
+  * Database: PostgreSQL or MySQL
+  * Use MVC / MVT architecture, with clean separation of concerns.
+* Implement:
+
+  * User authentication (login/logout, password hashing, reset)
+  * Role-based access control (e.g. Admin, Doctor, Nurse, Receptionist, Finance, HQ Staff)
+  * Responsive design (desktop, tablet, mobile)
+  * Basic audit logging (who did what and when, especially for financial and medical records)
+  * Clear navigation grouped by modules: Patient, Finance, Management, HQ Management, Setup.
+
+For **each module and feature below**, you must:
+
+* Design the database models (with fields, relationships, and constraints).
+* Define the main views / controllers / routes.
+* Provide example forms and validation rules.
+* Show example HTML templates or at least template structure.
+* If using Django, show `models.py`, `views.py`, `urls.py`, and form snippets.
+* If using Flask, show blueprints or route functions, and models with SQLAlchemy.
+
+---
+
+### 2. PATIENT MODULE
+
+Create a **Patient** module with the following features:
+
+1. **Register (Medical Visit / OTC)**
+
+   * Register new patients and update existing patient profiles.
+   * Capture: name, ID/passport, date of birth, gender, address, phone, email, emergency contact, allergies, chronic illnesses.
+   * Allow registering a visit type: Medical Visit vs Over The Counter (OTC).
+   * Generate a visit record for each registration (date, doctor, reason, status).
+
+2. **Consultation**
+
+   * For each visit, allow doctors to record:
+
+     * Chief complaint, history of present illness, examination findings, diagnosis, treatment plan.
+     * Prescribed medicines (linked to Medicine & Stock from Setup module).
+   * Save consultation notes and allow edit history.
+
+3. **Appointment**
+
+   * Appointment scheduling for patients:
+
+     * Choose doctor, date, time, reason.
+     * Status: scheduled, completed, cancelled, no-show.
+   * Doctor’s daily/weekly calendar view.
+
+4. **Payment**
+
+   * Link to visits and consultations.
+   * Record payment amount, payment method (cash, card, e-wallet, etc.), invoice number, date.
+   * Support partial payment, outstanding balance.
+
+5. **Doctor’s Fee**
+
+   * Configure per-doctor consultation fees.
+   * Automatically calculate doctor’s fee based on visits and consultations.
+
+6. **Antenatal**
+
+   * Register antenatal patients.
+   * Track antenatal visits, vitals (BP, weight, fundal height), lab tests, scan results, and expected delivery date.
+
+7. **FOMEMA**
+
+   * Module for foreign worker medical examinations.
+   * Store worker details, employer info, test status, results, and submission status.
+
+8. **Immunization**
+
+   * Track vaccines given to patients.
+   * Fields: vaccine type, batch number, date given, next due date, administered by (staff).
+
+9. **Lab & X-ray Results**
+
+   * Upload and store lab and X-ray results (file upload + structured data).
+   * Link results to patient and visit.
+   * Status: pending, completed, reviewed.
+
+10. **Medical Checkup**
+
+* For general medical checkups (e.g. pre-employment, insurance).
+* Standard form: history, physical exam, lab tests, conclusion, fitness status.
+
+11. **Medical History**
+
+* Consolidated view of all past visits, diagnoses, medications, allergies, lab results.
+
+12. **Med. History**
+
+* Separate but related to point 11: focus on **Medication History** (drugs prescribed, dosages, start/end dates).
+
+13. **Referral Letter**
+
+* Generate printable referral letters to specialists/hospitals.
+* Auto-fill patient data, doctor details, reason for referral, findings.
+
+14. **Quarantine Slip**
+
+* Generate quarantine slips for infectious diseases.
+* Includes patient info, diagnosis, quarantine period, doctor details.
+* Printable PDF.
+
+---
+
+### 3. FINANCE MODULE
+
+Create a **Finance** module with the following features:
+
+1. **Credit Payment**
+
+   * Manage patients or panels (corporate clients) who pay on credit.
+   * Track outstanding invoices, due dates, payment history.
+
+2. **EOD (End of Day)**
+
+   * End-of-day financial summary.
+   * Total cash, card, e-wallet, credit, refunds.
+   * Exportable daily report.
+
+3. **Account Ledger**
+
+   * Simple ledger for income and expenses linked to clinic operations.
+   * Filter by date range, account type, and branch (if applicable).
+
+4. **Panel Claim**
+
+   * Manage claims to corporate panels / insurance.
+   * Track claim submission, status (submitted, approved, rejected, paid), and amounts.
+
+5. **Supplier**
+
+   * Manage supplier details (for medicines, disposables, etc.).
+   * Contact info, payment terms, and related stock items.
+
+6. **Stock Order**
+
+   * Record purchase orders to suppliers.
+   * Fields: supplier, items, quantity, unit price, order date, delivery date, status.
+
+7. **Finance Setup**
+
+   * Configure financial settings (tax rate, invoice prefix, payment methods, etc.).
+
+---
+
+### 4. MANAGEMENT MODULE
+
+Create a **Management/Admin** module with:
+
+1. **Reporting**
+
+   * Basic reports:
+
+     * Daily/Monthly visits, revenue, most used medicines, outstanding credits, etc.
+   * Allow export to CSV/PDF.
+
+2. **Dashboard**
+
+   * Visual dashboard with key metrics:
+
+     * Today’s patient count, appointments, revenue, pending lab results, etc.
+   * Use charts and summary cards.
+
+3. **Clinic Setup**
+
+   * General clinic settings (clinic name, address, logo, contact info, operating hours).
+
+4. **Staff and User**
+
+   * Manage staff profiles and user accounts.
+   * Roles (Doctor, Nurse, Receptionist, Finance, Admin, HQ).
+   * Assign permissions based on role.
+
+5. **Attendance**
+
+   * Staff check-in/check-out.
+   * Attendance log and basic summary (days present, absent).
+
+6. **Admin Profile**
+
+   * Allow admin users to update their own profile and password.
+
+7. **Queue Calling Display**
+
+   * Queue management:
+
+     * Generate queue numbers for patients.
+     * Assign queue to doctor/room.
+     * Interface for calling next patient (display on screen).
+
+8. **Promotional Product**
+
+   * Manage promotional items (e.g. health packages, supplements).
+   * Fields: name, description, price, promotion period, discount.
+
+9. **Membership Reward**
+
+* Manage patient membership/loyalty program.
+* Points earning rules, points balance per patient, and redemption history.
+
+---
+
+### 5. HQ MANAGEMENT MODULE
+
+For clinics with multiple branches, create an **HQ Management** module:
+
+1. **Branch Info**
+
+   * List and manage branches.
+   * Fields: branch name, address, contact, manager.
+
+2. **Branch Order**
+
+   * Branch requests stock from HQ.
+   * Track order status and items.
+
+3. **HQ Stock**
+
+   * Central HQ stock inventory.
+   * Track stock levels, batches, expiry dates.
+
+4. **HQ Order**
+
+   * Orders placed by HQ to external suppliers.
+   * Similar to Stock Order but at HQ level.
+
+5. **HQ Panel Claim**
+
+   * Centralized management of panel claims from all branches.
+
+---
+
+### 6. SETUP MODULE
+
+Create a **Setup** module for master data and configurations:
+
+1. **Medicine**
+
+   * Master list of medicines: name, generic name, strength, form, pack size, stock-keeping unit, selling price, cost price, tax, expiry, etc.
+
+2. **Stock Setup**
+
+   * Global stock settings: minimum levels, alerts, units of measure.
+
+3. **Fee**
+
+   * Setup fee structures: consultation fee, procedure fees, lab fees, etc.
+
+4. **Log**
+
+   * System activity logs:
+
+     * User login, data create/update/delete for sensitive entities.
+
+5. **Allergy**
+
+   * Master list of common allergies to assign to patients.
+
+6. **Lab Test**
+
+   * Master list of lab tests (code, name, normal ranges, price).
+
+7. **Disposable**
+
+   * Master list of disposable items (syringes, gloves, etc.) with stock tracking.
+
+8. **Operation & Room**
+
+   * Setup operation types and room mapping:
+
+     * Room name, type, availability, equipment info.
+
+9. **Panel**
+
+* Master data for corporate/insurance panels:
+
+  * Company name, address, contact, billing terms, panel codes.
+
+---
+
+### 7. Deliverables
+
+1. **Project structure** for Django or Flask (folders, apps/modules).
+2. **Database schema/ERD description** for all modules.
+3. **Sample code** for:
+
+   * Models, views/routes, forms/serializers.
+   * Key templates (e.g. patient registration, consultation form, appointment list, EOD report, dashboard).
+4. **Example seed data** for testing (e.g. sample patients, doctors, medicines, panels).
+5. Basic **instructions** to run the project:
+
+   * How to install dependencies.
+   * How to apply migrations.
+   * How to create a superuser/admin.
+   * How to start the development server.
+
+Focus on clean, maintainable code, clear naming, and modular design, so this clinic management system can be expanded later.
+
+---
+
+You can paste that whole block into your AI/code assistant and let it generate the project structure, code, and database design for you. If you want, I can next help you **tune this prompt specifically for Django** or **for Flask** only.
