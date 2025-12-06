@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointment Calendar{% endblock %}
+{% block page_title %}Appointment Calendar{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-calendar3"></i> Calendar</span>
+        <div class="d-flex gap-2">
+            <select id="doctorFilter" class="form-select form-select-sm" style="width: auto;">
+                <option value="">All Doctors</option>
+                {% for doc in doctors %}
+                <option value="{{ doc.pk }}">{{ doc.get_full_name }}</option>
+                {% endfor %}
+            </select>
+            <a href="{% url 'patients:appointment_list' %}" class="btn btn-outline-secondary btn-sm">List View</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="calendar"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: function(info, successCallback, failureCallback) {
+            var doctor = document.getElementById('doctorFilter').value;
+            fetch('{% url "patients:calendar_events" %}?start=' + info.startStr + '&end=' + info.endStr + '&doctor=' + doctor)
+                .then(response => response.json())
+                .then(data => successCallback(data))
+                .catch(error => failureCallback(error));
+        },
+        eventClick: function(info) {
+            window.location.href = '/patients/appointments/' + info.event.id + '/edit/';
+        }
+    });
+    calendar.render();
+    
+    document.getElementById('doctorFilter').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-header">Patient Info</div>
+            <div class="card-body">
+                <h6>{{ visit.patient.full_name }}</h6>
+                <p class="text-muted small">{{ visit.patient.patient_id }}</p>
+                <p><strong>Age:</strong> {{ visit.patient.age }} yrs</p>
+                <p><strong>Gender:</strong> {{ visit.patient.get_gender_display }}</p>
+                {% if visit.patient.allergies.exists %}
+                <div class="alert alert-danger py-2">
+                    <strong>Allergies:</strong><br>
+                    {% for a in visit.patient.allergies.all %}{{ a.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <h6 class="mb-3">Vitals</h6>
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">BP</label>
+                            {{ form.vitals_bp }}
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Pulse</label>
+                            {{ form.vitals_pulse }}
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Temp (°C)</label>
+                            {{ form.vitals_temp }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Weight (kg)</label>
+                            {{ form.vitals_weight }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Height (cm)</label>
+                            {{ form.vitals_height }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6 class="mb-3">Clinical Notes</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Chief Complaint *</label>
+                        {{ form.chief_complaint }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">History of Present Illness</label>
+                        {{ form.history_of_illness }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Examination Findings</label>
+                        {{ form.examination_findings }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Diagnosis *</label>
+                        {{ form.diagnosis }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Treatment Plan</label>
+                        {{ form.treatment_plan }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Additional Notes</label>
+                        {{ form.notes }}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Save Consultation
+                        </button>
+                        <a href="{% url 'patients:visit_detail' visit.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

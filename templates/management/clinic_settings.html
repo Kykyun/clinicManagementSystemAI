@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Clinic Settings{% endblock %}
+{% block page_title %}Clinic Settings{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-gear"></i> Clinic Settings
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Clinic Name *</label>
+                    <input type="text" name="clinic_name" class="form-control" value="{{ form.clinic_name.value|default:'' }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Website</label>
+                    <input type="url" name="website" class="form-control" value="{{ form.website.value|default:'' }}">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="2">{{ form.address.value|default:'' }}</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Registration Number</label>
+                    <input type="text" name="registration_number" class="form-control" value="{{ form.registration_number.value|default:'' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Tax ID</label>
+                    <input type="text" name="tax_id" class="form-control" value="{{ form.tax_id.value|default:'' }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Consultation Fee Default</label>
+                    <input type="number" step="0.01" name="consultation_fee" class="form-control" value="{{ form.consultation_fee.value|default:'0' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Logo</label>
+                    {{ form.logo }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Invoice Footer Text</label>
+                <textarea name="invoice_footer" class="form-control" rows="3">{{ form.invoice_footer.value|default:'' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

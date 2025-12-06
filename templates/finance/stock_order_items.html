@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Order Items{% endblock %}
+{% block page_title %}Stock Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-header">Order Items</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.medicine.name|default:item.disposable.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.unit_price|floatformat:2 }}</td>
+                            <td>${{ item.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No items added.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-primary">
+                            <td colspan="3"><strong>Total:</strong></td>
+                            <td><strong>${{ order.total_amount|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        {% if order.status == 'pending' %}
+        <div class="card">
+            <div class="card-header">Add Item</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Medicine</label>
+                            {{ form.medicine }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Or Disposable</label>
+                            {{ form.disposable }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Quantity *</label>
+                            {{ form.quantity }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Unit Price *</label>
+                            {{ form.unit_price }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus"></i> Add Item
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">Order Info</div>
+            <div class="card-body">
+                <p><strong>Supplier:</strong> {{ order.supplier.name }}</p>
+                <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+                <p><strong>Expected:</strong> {{ order.expected_delivery|default:"TBD" }}</p>
+                <p><strong>Status:</strong> 
+                    {% if order.status == 'pending' %}
+                    <span class="badge bg-secondary">Pending</span>
+                    {% elif order.status == 'delivered' %}
+                    <span class="badge bg-success">Delivered</span>
+                    {% else %}
+                    <span class="badge bg-info">{{ order.get_status_display }}</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-value">{{ total_patients_today }}</div>
+                <div class="stat-label">Patients Today</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #198754;">
+            <div class="card-body">
+                <div class="stat-value" style="color: #198754;">{{ total_appointments_today }}</div>
+                <div class="stat-label">Appointments Today</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #ffc107;">
+            <div class="card-body">
+                <div class="stat-value" style="color: #ffc107;">{{ pending_invoices }}</div>
+                <div class="stat-label">Pending Invoices</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #20c997;">
+            <div class="card-body">
+                <div class="stat-value" style="color: #20c997;">${{ revenue_today|floatformat:2 }}</div>
+                <div class="stat-label">Revenue Today</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up"></i> Weekly Overview
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar-check"></i> Upcoming Appointments</span>
+                <a href="{% url 'patients:appointment_create' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for apt in upcoming_appointments %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ apt.patient.full_name }}</strong>
+                                <br><small class="text-muted">{{ apt.appointment_date }} {{ apt.appointment_time }}</small>
+                            </div>
+                            <span class="badge bg-primary">{{ apt.doctor.first_name }}</span>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">No upcoming appointments</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clipboard2-pulse"></i> Recent Visits</span>
+                <a href="{% url 'patients:visit_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus"></i> New Visit
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in recent_visits %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'patients:visit_detail' visit.pk %}">{{ visit.patient.full_name }}</a>
+                            </td>
+                            <td>{{ visit.get_visit_type_display }}</td>
+                            <td>
+                                {% if visit.status == 'waiting' %}
+                                <span class="badge bg-warning">Waiting</span>
+                                {% elif visit.status == 'in_progress' %}
+                                <span class="badge bg-info">In Progress</span>
+                                {% elif visit.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No visits today</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-people"></i> Recent Patients</span>
+                <a href="{% url 'patients:patient_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus"></i> New Patient
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in recent_patients %}
+                        <tr>
+                            <td>{{ patient.patient_id }}</td>
+                            <td>
+                                <a href="{% url 'patients:patient_detail' patient.pk %}">{{ patient.full_name }}</a>
+                            </td>
+                            <td>{{ patient.phone }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No patients registered</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if low_stock_medicines > 0 %}
+<div class="alert alert-warning mt-4">
+    <i class="bi bi-exclamation-triangle"></i> 
+    <strong>Low Stock Alert:</strong> {{ low_stock_medicines }} medicine(s) are running low on stock.
+    <a href="{% url 'setup_app:medicine_list' %}?low_stock=1">View Details</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+fetch('{% url "management_app:dashboard_data" %}')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Visits',
+                    data: data.visits,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Revenue ($)',
+                    data: data.revenue,
+                    borderColor: '#20c997',
+                    backgroundColor: 'rgba(32, 201, 151, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left'
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

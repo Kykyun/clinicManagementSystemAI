@@ -1,0 +1,31 @@
+from django.urls import path
+from . import views
+
+app_name = 'patients'
+
+urlpatterns = [
+    path('', views.patient_list, name='patient_list'),
+    path('create/', views.patient_create, name='patient_create'),
+    path('<int:pk>/', views.patient_detail, name='patient_detail'),
+    path('<int:pk>/edit/', views.patient_edit, name='patient_edit'),
+    path('<int:pk>/history/', views.patient_history, name='patient_history'),
+    
+    path('visits/', views.visit_list, name='visit_list'),
+    path('visits/create/', views.visit_create, name='visit_create'),
+    path('visits/create/<int:patient_id>/', views.visit_create, name='visit_create_for_patient'),
+    path('visits/<int:pk>/', views.visit_detail, name='visit_detail'),
+    path('visits/<int:pk>/complete/', views.complete_visit, name='complete_visit'),
+    
+    path('consultation/create/<int:visit_id>/', views.consultation_create, name='consultation_create'),
+    path('consultation/<int:pk>/', views.consultation_detail, name='consultation_detail'),
+    path('consultation/<int:pk>/edit/', views.consultation_edit, name='consultation_edit'),
+    
+    path('prescription/add/<int:consultation_id>/', views.prescription_add, name='prescription_add'),
+    
+    path('appointments/', views.appointment_list, name='appointment_list'),
+    path('appointments/create/', views.appointment_create, name='appointment_create'),
+    path('appointments/<int:pk>/edit/', views.appointment_edit, name='appointment_edit'),
+    path('appointments/<int:pk>/status/<str:status>/', views.appointment_status, name='appointment_status'),
+    path('appointments/calendar/', views.calendar_view, name='calendar_view'),
+    path('appointments/calendar/events/', views.calendar_events, name='calendar_events'),
+]

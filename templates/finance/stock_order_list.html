@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Orders{% endblock %}
+{% block page_title %}Stock Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-box-seam"></i> Stock Orders</span>
+        <a href="{% url 'finance:stock_order_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> New Order
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Supplier</th>
+                    <th>Order Date</th>
+                    <th>Expected</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><code>{{ order.order_number }}</code></td>
+                    <td>{{ order.supplier.name }}</td>
+                    <td>{{ order.order_date }}</td>
+                    <td>{{ order.expected_delivery|default:"-" }}</td>
+                    <td>${{ order.total_amount|floatformat:2 }}</td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                        <span class="badge bg-secondary">Pending</span>
+                        {% elif order.status == 'ordered' %}
+                        <span class="badge bg-primary">Ordered</span>
+                        {% elif order.status == 'shipped' %}
+                        <span class="badge bg-info">Shipped</span>
+                        {% elif order.status == 'delivered' %}
+                        <span class="badge bg-success">Delivered</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'finance:stock_order_items' order.pk %}" class="btn btn-outline-primary btn-action">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if order.status == 'pending' %}
+                            <a href="{% url 'finance:stock_order_status' order.pk 'ordered' %}" class="btn btn-outline-success btn-action" title="Mark Ordered">
+                                <i class="bi bi-send"></i>
+                            </a>
+                            {% elif order.status == 'ordered' %}
+                            <a href="{% url 'finance:stock_order_status' order.pk 'delivered' %}" class="btn btn-outline-success btn-action" title="Mark Delivered">
+                                <i class="bi bi-check"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No stock orders found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

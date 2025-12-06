@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-calendar-check"></i> Appointments</span>
+        <div>
+            <a href="{% url 'patients:calendar_view' %}" class="btn btn-outline-primary btn-sm me-2">
+                <i class="bi bi-calendar3"></i> Calendar View
+            </a>
+            <a href="{% url 'patients:appointment_create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> New Appointment
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-3">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ date_filter }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Doctor</label>
+                    <select name="doctor" class="form-select">
+                        <option value="">All Doctors</option>
+                        {% for doc in doctors %}
+                        <option value="{{ doc.pk }}" {% if doctor_filter == doc.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ doc.get_full_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary">Filter</button>
+                </div>
+            </div>
+        </form>
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for apt in appointments %}
+                <tr>
+                    <td>{{ apt.appointment_time }}</td>
+                    <td><a href="{% url 'patients:patient_detail' apt.patient.pk %}">{{ apt.patient.full_name }}</a></td>
+                    <td>{{ apt.doctor.get_full_name|default:"-" }}</td>
+                    <td>{{ apt.reason|truncatewords:8 }}</td>
+                    <td>
+                        {% if apt.status == 'scheduled' %}
+                        <span class="badge bg-primary">Scheduled</span>
+                        {% elif apt.status == 'confirmed' %}
+                        <span class="badge bg-info">Confirmed</span>
+                        {% elif apt.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                        {% elif apt.status == 'cancelled' %}
+                        <span class="badge bg-secondary">Cancelled</span>
+                        {% elif apt.status == 'no_show' %}
+                        <span class="badge bg-danger">No Show</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'patients:appointment_edit' apt.pk %}" class="btn btn-outline-primary btn-action">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if apt.status == 'scheduled' %}
+                            <a href="{% url 'patients:appointment_status' apt.pk 'completed' %}" class="btn btn-outline-success btn-action" title="Mark Completed">
+                                <i class="bi bi-check"></i>
+                            </a>
+                            <a href="{% url 'patients:appointment_status' apt.pk 'cancelled' %}" class="btn btn-outline-danger btn-action" title="Cancel">
+                                <i class="bi bi-x"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No appointments for this date.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

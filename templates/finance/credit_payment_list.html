@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Credit Payments{% endblock %}
+{% block page_title %}Outstanding Invoices{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-credit-card"></i> Pending/Partial Payments
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Patient</th>
+                    <th>Invoice Date</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td><code>{{ inv.invoice_number }}</code></td>
+                    <td>{{ inv.patient.full_name }}</td>
+                    <td>{{ inv.invoice_date|date:"M d, Y" }}</td>
+                    <td>${{ inv.total_amount|floatformat:2 }}</td>
+                    <td>${{ inv.amount_paid|floatformat:2 }}</td>
+                    <td class="text-danger">${{ inv.outstanding_balance|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'finance:payment_create' inv.pk %}" class="btn btn-success btn-action">
+                            <i class="bi bi-cash"></i> Pay
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No outstanding invoices.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}New Queue Ticket{% endblock %}
+{% block page_title %}New Queue Ticket{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-ticket-perforated"></i> Create Queue Ticket
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Patient *</label>
+                    {{ form.patient }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Doctor</label>
+                    {{ form.doctor }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Notes</label>
+                <textarea name="notes" class="form-control" rows="2">{{ form.notes.value|default:'' }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Create Ticket</button>
+                <a href="{% url 'management_app:queue_display' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

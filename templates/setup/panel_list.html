@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Panels{% endblock %}
+{% block page_title %}Insurance Panels{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-building"></i> Insurance Panels</span>
+        <a href="{% url 'setup_app:panel_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Add Panel
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact Person</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Discount Rate</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in panels %}
+                <tr>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.contact_person|default:"-" }}</td>
+                    <td>{{ p.phone|default:"-" }}</td>
+                    <td>{{ p.email|default:"-" }}</td>
+                    <td>{{ p.discount_rate }}%</td>
+                    <td>
+                        <a href="{% url 'setup_app:panel_edit' p.pk %}" class="btn btn-outline-primary btn-action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No panels found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

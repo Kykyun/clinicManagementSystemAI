@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Medical History - {{ patient.full_name }}{% endblock %}
+{% block page_title %}Medical History{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h5>{{ patient.full_name }} <small class="text-muted">({{ patient.patient_id }})</small></h5>
+</div>
+
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#visits">Visits</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#lab">Lab Results</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#immunization">Immunizations</a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="visits">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Doctor</th>
+                            <th>Diagnosis</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for visit in visits %}
+                        <tr>
+                            <td>{{ visit.visit_date|date:"M d, Y" }}</td>
+                            <td>{{ visit.get_visit_type_display }}</td>
+                            <td>{{ visit.doctor.get_full_name|default:"-" }}</td>
+                            <td>
+                                {% if visit.consultation %}
+                                {{ visit.consultation.diagnosis|truncatewords:10 }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'patients:visit_detail' visit.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center">No visit history.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="lab">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Test</th>
+                            <th>Result</th>
+                            <th>Normal Range</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in lab_results %}
+                        <tr class="{% if result.is_abnormal %}table-warning{% endif %}">
+                            <td>{{ result.test_date|date:"M d, Y" }}</td>
+                            <td>{{ result.lab_test.name }}</td>
+                            <td>{{ result.result_value }} {{ result.result_unit }}</td>
+                            <td>{{ result.normal_range|default:"-" }}</td>
+                            <td>
+                                {% if result.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elif result.status == 'completed' %}
+                                <span class="badge bg-info">Completed</span>
+                                {% else %}
+                                <span class="badge bg-success">Reviewed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center">No lab results.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="immunization">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date Given</th>
+                            <th>Vaccine</th>
+                            <th>Dose</th>
+                            <th>Batch #</th>
+                            <th>Next Due</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for imm in immunizations %}
+                        <tr>
+                            <td>{{ imm.date_given|date:"M d, Y" }}</td>
+                            <td>{{ imm.vaccine_name }}</td>
+                            <td>Dose {{ imm.dose_number }}</td>
+                            <td>{{ imm.batch_number|default:"-" }}</td>
+                            <td>{{ imm.next_due_date|date:"M d, Y"|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center">No immunization records.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'patients:patient_detail' patient.pk %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Patient
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>{% block title %}Clinic Management System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --sidebar-bg: #212529;
+            --sidebar-text: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background: var(--sidebar-bg);
+            padding-top: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            color: var(--sidebar-text);
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar .nav-section {
+            padding: 15px 20px 5px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: var(--sidebar-text);
+            background: rgba(255,255,255,0.1);
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+        .stat-card {
+            border-left: 4px solid var(--primary-color);
+        }
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .stat-card .stat-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .table th {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.65rem;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav class="sidebar">
+        <a href="{% url 'management_app:dashboard' %}" class="brand">
+            <i class="bi bi-hospital"></i> ClinicMS
+        </a>
+        
+        <div class="nav-section">Dashboard</div>
+        <a href="{% url 'management_app:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        
+        <div class="nav-section">Patient</div>
+        <a href="{% url 'patients:patient_list' %}" class="nav-link">
+            <i class="bi bi-people"></i> Patients
+        </a>
+        <a href="{% url 'patients:visit_list' %}" class="nav-link">
+            <i class="bi bi-clipboard2-pulse"></i> Visits
+        </a>
+        <a href="{% url 'patients:appointment_list' %}" class="nav-link">
+            <i class="bi bi-calendar-check"></i> Appointments
+        </a>
+        
+        <div class="nav-section">Finance</div>
+        <a href="{% url 'finance:invoice_list' %}" class="nav-link">
+            <i class="bi bi-receipt"></i> Invoices
+        </a>
+        <a href="{% url 'finance:credit_payment_list' %}" class="nav-link">
+            <i class="bi bi-credit-card"></i> Credit Payments
+        </a>
+        <a href="{% url 'finance:eod_report' %}" class="nav-link">
+            <i class="bi bi-file-earmark-bar-graph"></i> EOD Report
+        </a>
+        <a href="{% url 'finance:supplier_list' %}" class="nav-link">
+            <i class="bi bi-truck"></i> Suppliers
+        </a>
+        <a href="{% url 'finance:stock_order_list' %}" class="nav-link">
+            <i class="bi bi-box-seam"></i> Stock Orders
+        </a>
+        
+        <div class="nav-section">Management</div>
+        <a href="{% url 'management_app:reporting' %}" class="nav-link">
+            <i class="bi bi-bar-chart"></i> Reports
+        </a>
+        <a href="{% url 'management_app:queue_display' %}" class="nav-link">
+            <i class="bi bi-list-ol"></i> Queue
+        </a>
+        <a href="{% url 'management_app:attendance_list' %}" class="nav-link">
+            <i class="bi bi-person-check"></i> Attendance
+        </a>
+        {% if user.role == 'admin' %}
+        <a href="{% url 'accounts:staff_list' %}" class="nav-link">
+            <i class="bi bi-person-gear"></i> Staff
+        </a>
+        <a href="{% url 'management_app:clinic_settings' %}" class="nav-link">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+        {% endif %}
+        
+        <div class="nav-section">Setup</div>
+        <a href="{% url 'setup_app:medicine_list' %}" class="nav-link">
+            <i class="bi bi-capsule"></i> Medicines
+        </a>
+        <a href="{% url 'setup_app:lab_test_list' %}" class="nav-link">
+            <i class="bi bi-droplet"></i> Lab Tests
+        </a>
+        <a href="{% url 'setup_app:fee_list' %}" class="nav-link">
+            <i class="bi bi-cash-coin"></i> Fees
+        </a>
+        <a href="{% url 'setup_app:panel_list' %}" class="nav-link">
+            <i class="bi bi-building"></i> Panels
+        </a>
+    </nav>
+    
+    <div class="main-content">
+        <div class="top-bar">
+            <div>
+                <h5 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">{{ user.get_full_name|default:user.username }}</span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    {% else %}
+    <div class="container">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.data-table').DataTable({
+                pageLength: 25,
+                responsive: true
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

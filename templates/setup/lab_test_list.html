@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Lab Tests{% endblock %}
+{% block page_title %}Lab Tests{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-droplet"></i> Lab Tests</span>
+        <a href="{% url 'setup_app:lab_test_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Add Lab Test
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in lab_tests %}
+                <tr>
+                    <td>{{ t.code }}</td>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.category|default:"-" }}</td>
+                    <td>${{ t.price }}</td>
+                    <td>
+                        <a href="{% url 'setup_app:lab_test_edit' t.pk %}" class="btn btn-outline-primary btn-action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No lab tests found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

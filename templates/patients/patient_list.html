@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Patients{% endblock %}
+{% block page_title %}Patients{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-people"></i> Patient List</span>
+        <a href="{% url 'patients:patient_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Register Patient
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search by name, ID, or phone..." value="{{ query }}">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+        
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td><code>{{ patient.patient_id }}</code></td>
+                    <td>
+                        <a href="{% url 'patients:patient_detail' patient.pk %}">{{ patient.full_name }}</a>
+                    </td>
+                    <td>{{ patient.age }} yrs</td>
+                    <td>{{ patient.get_gender_display }}</td>
+                    <td>{{ patient.phone }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'patients:patient_detail' patient.pk %}" class="btn btn-outline-primary btn-action" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'patients:visit_create_for_patient' patient.pk %}" class="btn btn-outline-success btn-action" title="New Visit">
+                                <i class="bi bi-clipboard-plus"></i>
+                            </a>
+                            <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-outline-secondary btn-action" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No patients found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

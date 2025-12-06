@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person"></i> Profile Information
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        {{ form.phone }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        {{ form.address }}
+                    </div>
+                    {% if user.role == 'doctor' %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Specialization</label>
+                            {{ form.specialization }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">License Number</label>
+                            {{ form.license_number }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Update Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Account Info
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+                <p><strong>Joined:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

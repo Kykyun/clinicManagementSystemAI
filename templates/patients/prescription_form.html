@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Prescription{% endblock %}
+{% block page_title %}Add Prescription{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                Prescribing for: {{ consultation.visit.patient.full_name }}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Medicine *</label>
+                        {{ form.medicine }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Dosage *</label>
+                            {{ form.dosage }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Frequency *</label>
+                            {{ form.frequency }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Duration *</label>
+                            {{ form.duration }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Quantity *</label>
+                            {{ form.quantity }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Instructions</label>
+                        {{ form.instructions }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Add Prescription
+                        </button>
+                        <a href="{% url 'patients:consultation_detail' consultation.pk %}" class="btn btn-outline-secondary">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

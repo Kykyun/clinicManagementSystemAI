@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-funnel"></i> Report Filters
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Report Type</label>
+                <select name="type" class="form-select">
+                    <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily</option>
+                    <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                    <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start" class="form-control" value="{{ start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input type="date" name="end" class="form-control" value="{{ end_date }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Generate</button>
+                <a href="{% url 'management_app:export_report_csv' %}?start={{ start_date }}&end={{ end_date }}" class="btn btn-outline-success me-2">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                </a>
+                <a href="{% url 'management_app:export_report_pdf' %}?start={{ start_date }}&end={{ end_date }}" class="btn btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Total Visits</div>
+                <div class="stat-value">{{ total_visits|intcomma }}</div>
+                <small class="text-muted">{{ start_date }} to {{ end_date }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stat-card h-100" style="border-left-color: #198754;">
+            <div class="card-body">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" style="color: #198754;">${{ total_revenue|floatformat:2|intcomma }}</div>
+                <small class="text-muted">{{ start_date }} to {{ end_date }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-pie-chart"></i> Revenue by Payment Method
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in revenue_by_method %}
+                        <tr>
+                            <td>{{ item.payment_method|title }}</td>
+                            <td>${{ item.total|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="text-center">No data</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-bar-chart"></i> Visits by Type
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Visit Type</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in visits_by_type %}
+                        <tr>
+                            <td>{{ item.visit_type|title }}</td>
+                            <td>{{ item.count }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="text-center">No data</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-capsule"></i> Top Prescribed Medicines
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Times Prescribed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in top_medicines %}
+                <tr>
+                    <td>{{ m.name }}</td>
+                    <td>{{ m.count }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" class="text-center">No prescription data for this period.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

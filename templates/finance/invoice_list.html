@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoices{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-receipt"></i> Invoice List</span>
+        <a href="{% url 'finance:invoice_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Create Invoice
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-3">
+            <select name="status" class="form-select" style="width: auto; display: inline-block;" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="partial" {% if status_filter == 'partial' %}selected{% endif %}>Partial</option>
+                <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid</option>
+            </select>
+        </form>
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td><code>{{ inv.invoice_number }}</code></td>
+                    <td>{{ inv.patient.full_name }}</td>
+                    <td>{{ inv.invoice_date|date:"M d, Y" }}</td>
+                    <td>${{ inv.total_amount|floatformat:2 }}</td>
+                    <td>${{ inv.outstanding_balance|floatformat:2 }}</td>
+                    <td>
+                        {% if inv.status == 'pending' %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% elif inv.status == 'partial' %}
+                        <span class="badge bg-info">Partial</span>
+                        {% elif inv.status == 'paid' %}
+                        <span class="badge bg-success">Paid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'finance:invoice_detail' inv.pk %}" class="btn btn-outline-primary btn-action">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No invoices found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

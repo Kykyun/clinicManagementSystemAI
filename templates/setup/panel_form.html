@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-building"></i> {{ title }}
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Panel Name *</label>
+                    <input type="text" name="name" class="form-control" value="{{ form.name.value|default:'' }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Contact Person</label>
+                    <input type="text" name="contact_person" class="form-control" value="{{ form.contact_person.value|default:'' }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Discount Rate (%)</label>
+                    <input type="number" step="0.01" name="discount_rate" class="form-control" value="{{ form.discount_rate.value|default:'0' }}">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="2">{{ form.address.value|default:'' }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Notes</label>
+                <textarea name="notes" class="form-control" rows="3">{{ form.notes.value|default:'' }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{% url 'setup_app:panel_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

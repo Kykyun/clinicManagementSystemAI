@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Fees{% endblock %}
+{% block page_title %}Fees{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-cash-coin"></i> Fee Structure</span>
+        <a href="{% url 'setup_app:fee_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Add Fee
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in fees %}
+                <tr>
+                    <td>{{ f.code }}</td>
+                    <td>{{ f.name }}</td>
+                    <td>{{ f.category|default:"-" }}</td>
+                    <td>${{ f.amount }}</td>
+                    <td>
+                        <a href="{% url 'setup_app:fee_edit' f.pk %}" class="btn btn-outline-primary btn-action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No fees found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

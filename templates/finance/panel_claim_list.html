@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel Claims{% endblock %}
+{% block page_title %}Panel Claims{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-building"></i> Panel Claims</span>
+        <a href="{% url 'finance:panel_claim_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> New Claim
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Claim #</th>
+                    <th>Panel</th>
+                    <th>Invoice</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr>
+                    <td><code>{{ claim.claim_number }}</code></td>
+                    <td>{{ claim.panel.company_name }}</td>
+                    <td>{{ claim.invoice.invoice_number }}</td>
+                    <td>${{ claim.claim_amount|floatformat:2 }}</td>
+                    <td>
+                        {% if claim.status == 'pending' %}
+                        <span class="badge bg-secondary">Pending</span>
+                        {% elif claim.status == 'submitted' %}
+                        <span class="badge bg-primary">Submitted</span>
+                        {% elif claim.status == 'approved' %}
+                        <span class="badge bg-success">Approved</span>
+                        {% elif claim.status == 'rejected' %}
+                        <span class="badge bg-danger">Rejected</span>
+                        {% elif claim.status == 'paid' %}
+                        <span class="badge bg-info">Paid</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ claim.submission_date|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No panel claims found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

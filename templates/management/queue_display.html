@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Queue Display{% endblock %}
+{% block page_title %}Patient Queue{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h6>Now Serving</h6>
+                <h1 class="display-2">{% if current %}#{{ current.ticket_number }}{% else %}-{% endif %}</h1>
+                {% if current %}
+                <p class="mb-0">{{ current.patient.full_name }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6>Waiting</h6>
+                <h1 class="display-2 text-muted">{{ waiting.count }}</h1>
+                <p class="mb-0 text-muted">patients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'management_app:queue_ticket_create' %}" class="btn btn-success">
+                        <i class="bi bi-plus-lg"></i> New Ticket
+                    </a>
+                    <a href="{% url 'management_app:queue_call_next' %}" class="btn btn-primary">
+                        <i class="bi bi-megaphone"></i> Call Next
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-ol"></i> Today's Queue</span>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Ticket #</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in queue %}
+                <tr class="{% if q.status == 'called' %}table-warning{% elif q.status == 'in_service' %}table-info{% elif q.status == 'completed' %}table-success{% endif %}">
+                    <td><strong>#{{ q.ticket_number }}</strong></td>
+                    <td>{{ q.patient.full_name }}</td>
+                    <td>{{ q.doctor.get_full_name|default:"Any" }}</td>
+                    <td>
+                        {% if q.status == 'waiting' %}
+                        <span class="badge bg-secondary">Waiting</span>
+                        {% elif q.status == 'called' %}
+                        <span class="badge bg-warning">Called</span>
+                        {% elif q.status == 'in_service' %}
+                        <span class="badge bg-info">In Service</span>
+                        {% elif q.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                        {% elif q.status == 'skipped' %}
+                        <span class="badge bg-danger">Skipped</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ q.created_at|time:"H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No patients in queue today.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

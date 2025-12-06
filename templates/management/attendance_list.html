@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Staff Attendance{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5>Quick Actions</h5>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'management_app:attendance_checkin' %}" class="btn btn-success">
+                        <i class="bi bi-box-arrow-in-right"></i> Check In
+                    </a>
+                    <a href="{% url 'management_app:attendance_checkout' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-box-arrow-right"></i> Check Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="date" name="date" class="form-control" value="{{ date_filter }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-person-check"></i> Attendance for {{ date_filter }}
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Staff</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in attendance %}
+                <tr>
+                    <td>{{ a.staff.get_full_name|default:a.staff.username }}</td>
+                    <td>{{ a.check_in|time:"H:i"|default:"-" }}</td>
+                    <td>{{ a.check_out|time:"H:i"|default:"-" }}</td>
+                    <td>
+                        {% if a.status == 'present' %}
+                        <span class="badge bg-success">Present</span>
+                        {% elif a.status == 'absent' %}
+                        <span class="badge bg-danger">Absent</span>
+                        {% elif a.status == 'late' %}
+                        <span class="badge bg-warning">Late</span>
+                        {% elif a.status == 'leave' %}
+                        <span class="badge bg-info">Leave</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ a.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center">No attendance records for this date.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

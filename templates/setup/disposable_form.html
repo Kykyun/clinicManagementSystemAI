@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-bandaid"></i> {{ title }}
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Name *</label>
+                    <input type="text" name="name" class="form-control" value="{{ form.name.value|default:'' }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Unit</label>
+                    <input type="text" name="unit" class="form-control" value="{{ form.unit.value|default:'' }}" placeholder="e.g., pcs, box">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Unit Price *</label>
+                    <input type="number" step="0.01" name="unit_price" class="form-control" value="{{ form.unit_price.value|default:'0' }}" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Stock Quantity</label>
+                    <input type="number" name="stock_quantity" class="form-control" value="{{ form.stock_quantity.value|default:'0' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Minimum Stock</label>
+                    <input type="number" name="minimum_stock" class="form-control" value="{{ form.minimum_stock.value|default:'10' }}">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3">{{ form.description.value|default:'' }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{% url 'setup_app:disposable_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

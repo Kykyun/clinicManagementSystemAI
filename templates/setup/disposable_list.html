@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Disposables{% endblock %}
+{% block page_title %}Disposables{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-bandaid"></i> Disposable Items</span>
+        <a href="{% url 'setup_app:disposable_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg"></i> Add Disposable
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Unit</th>
+                    <th>Unit Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in disposables %}
+                <tr>
+                    <td>{{ d.name }}</td>
+                    <td>{{ d.unit|default:"-" }}</td>
+                    <td>${{ d.unit_price }}</td>
+                    <td>
+                        {% if d.stock_quantity <= d.minimum_stock %}
+                        <span class="badge bg-danger">{{ d.stock_quantity }}</span>
+                        {% else %}
+                        {{ d.stock_quantity }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'setup_app:disposable_edit' d.pk %}" class="btn btn-outline-primary btn-action">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center">No disposable items found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

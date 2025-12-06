@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Patient *</label>
+                        {{ form.patient }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Doctor *</label>
+                        {{ form.doctor }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date *</label>
+                            {{ form.appointment_date }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Time *</label>
+                            {{ form.appointment_time }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reason</label>
+                        {{ form.reason }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        {{ form.notes }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Save Appointment
+                        </button>
+                        <a href="{% url 'patients:appointment_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
