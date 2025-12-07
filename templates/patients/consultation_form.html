@@ -158,6 +158,127 @@
     .ai-action-btn.secondary {
         background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
     }
+    .history-section {
+        margin-bottom: 1.5rem;
+    }
+    .history-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .history-section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+    }
+    .history-scroll-container {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+    .history-scroll-container::-webkit-scrollbar {
+        height: 8px;
+    }
+    .history-scroll-container::-webkit-scrollbar-track {
+        background: #F1F5F9;
+        border-radius: 4px;
+    }
+    .history-scroll-container::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+        border-radius: 4px;
+    }
+    .history-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #94A3B8;
+    }
+    .history-card {
+        min-width: 320px;
+        max-width: 360px;
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 1rem;
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+    .history-card:hover {
+        border-color: #2A7DE1;
+        box-shadow: 0 4px 12px rgba(42, 125, 225, 0.15);
+    }
+    .history-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .history-date {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1E293B;
+    }
+    .history-badges {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+    }
+    .history-section-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    .history-section-value {
+        font-size: 0.85rem;
+        color: #1E293B;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+    .history-vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .history-vital-item {
+        text-align: center;
+        padding: 0.5rem;
+        background: #F7F9FC;
+        border-radius: 6px;
+    }
+    .history-vital-label {
+        font-size: 0.65rem;
+        color: #64748B;
+        text-transform: uppercase;
+    }
+    .history-vital-value {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1E293B;
+    }
+    .history-rx-list {
+        font-size: 0.8rem;
+        color: #475569;
+        margin: 0;
+        padding-left: 1rem;
+    }
+    .history-empty {
+        background: #F7F9FC;
+        border: 1px dashed #CBD5E1;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        color: #64748B;
+    }
     @media (max-width: 992px) {
         .vitals-grid {
             grid-template-columns: repeat(3, 1fr);
@@ -166,6 +287,9 @@
     @media (max-width: 576px) {
         .vitals-grid {
             grid-template-columns: repeat(2, 1fr);
+        }
+        .history-card {
+            min-width: 280px;
         }
     }
 </style>
@@ -183,6 +307,92 @@
         </a>
     </div>
 </div>
+
+{% if past_visits %}
+<div class="history-section">
+    <div class="history-section-header">
+        <h5 class="history-section-title">
+            <i class="bi bi-clock-history text-primary me-2"></i>Patient History ({{ past_visits|length }} previous visit{{ past_visits|length|pluralize }})
+        </h5>
+        <small class="text-muted">Scroll for more</small>
+    </div>
+    <div class="history-scroll-container">
+        {% for pv in past_visits %}
+        <div class="history-card">
+            <div class="history-card-header">
+                <div>
+                    <div class="history-date">{{ pv.visit_date|date:"M d, Y" }}</div>
+                    <small class="text-muted">{{ pv.visit_number }}</small>
+                </div>
+                <div class="history-badges">
+                    <span class="badge bg-secondary">{{ pv.get_visit_type_display }}</span>
+                    {% if pv.consultation and pv.consultation.mc_issued %}
+                    <span class="badge bg-info">MC {{ pv.consultation.mc_days }}d</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if pv.consultation %}
+            <div class="history-section-label">Chief Complaint</div>
+            <div class="history-section-value">{{ pv.consultation.chief_complaint|truncatewords:15|default:"-" }}</div>
+            
+            <div class="history-section-label">Diagnosis</div>
+            <div class="history-section-value">{{ pv.consultation.diagnosis|truncatewords:20|default:"-" }}</div>
+            
+            {% if pv.consultation.vitals_bp or pv.consultation.vitals_pulse or pv.consultation.vitals_temp %}
+            <div class="history-vitals-grid">
+                {% if pv.consultation.vitals_bp %}
+                <div class="history-vital-item">
+                    <div class="history-vital-label">BP</div>
+                    <div class="history-vital-value">{{ pv.consultation.vitals_bp }}</div>
+                </div>
+                {% endif %}
+                {% if pv.consultation.vitals_pulse %}
+                <div class="history-vital-item">
+                    <div class="history-vital-label">Pulse</div>
+                    <div class="history-vital-value">{{ pv.consultation.vitals_pulse }}</div>
+                </div>
+                {% endif %}
+                {% if pv.consultation.vitals_temp %}
+                <div class="history-vital-item">
+                    <div class="history-vital-label">Temp</div>
+                    <div class="history-vital-value">{{ pv.consultation.vitals_temp }}°C</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if pv.consultation.treatment_plan %}
+            <div class="history-section-label">Treatment Plan</div>
+            <div class="history-section-value">{{ pv.consultation.treatment_plan|truncatewords:15 }}</div>
+            {% endif %}
+            
+            {% if pv.consultation.prescriptions.exists %}
+            <div class="history-section-label">Prescriptions</div>
+            <ul class="history-rx-list">
+                {% for rx in pv.consultation.prescriptions.all|slice:":3" %}
+                <li>{{ rx.medicine.name|default:rx.medication_name }} - {{ rx.dosage }}</li>
+                {% endfor %}
+                {% if pv.consultation.prescriptions.count > 3 %}
+                <li class="text-muted">+{{ pv.consultation.prescriptions.count|add:"-3" }} more</li>
+                {% endif %}
+            </ul>
+            {% endif %}
+            
+            {% if pv.consultation.notes %}
+            <div class="history-section-label">Notes</div>
+            <div class="history-section-value text-muted fst-italic">{{ pv.consultation.notes|truncatewords:12 }}</div>
+            {% endif %}
+            {% else %}
+            <div class="text-muted text-center py-2">
+                <i class="bi bi-info-circle me-1"></i>No consultation recorded
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <div class="row g-4">
     <div class="col-lg-3">
@@ -237,34 +447,6 @@
             </div>
         </div>
         
-        {% if past_visits %}
-        <div class="patient-card card mt-3">
-            <div class="card-header">
-                <i class="bi bi-clock-history me-2"></i>Recent Visits
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for pv in past_visits %}
-                    <div class="list-group-item px-3 py-2">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <small class="text-muted d-block">{{ pv.visit_date|date:"M d, Y" }}</small>
-                                {% if pv.consultation %}
-                                <span class="small fw-medium">{{ pv.consultation.diagnosis|truncatewords:8 }}</span>
-                                {% if pv.consultation.mc_issued and pv.consultation.mc_days %}
-                                <span class="badge bg-info ms-1" style="font-size: 0.65rem;">MC {{ pv.consultation.mc_days }}d</span>
-                                {% endif %}
-                                {% else %}
-                                <span class="small text-muted">No consultation</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
     </div>
     
     <div class="col-lg-9">
