@@ -460,7 +460,7 @@ def api_prescription_suggestions(request, consultation_id):
                         selling_price=0,
                         cost_price=0,
                         stock_quantity=100,
-                        min_stock_level=10,
+                        minimum_stock=10,
                         is_active=True,
                     )
                     rx['medicine_id'] = new_med.id
