@@ -38,6 +38,8 @@
     .stat-icon.success { background: rgba(34, 197, 94, 0.12); color: #22C55E; }
     .stat-icon.warning { background: rgba(245, 158, 11, 0.12); color: #F59E0B; }
     .stat-icon.info { background: rgba(14, 165, 233, 0.12); color: #0EA5E9; }
+    .stat-icon.danger { background: rgba(239, 68, 68, 0.12); color: #EF4444; }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.12); color: #8B5CF6; }
     .stat-content .stat-value {
         font-size: 1.75rem;
         font-weight: 700;
@@ -50,7 +52,135 @@
         font-weight: 500;
         margin-top: 2px;
     }
-    .section-title {
+    .section-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .section-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #E2E8F0;
+        padding: 16px 20px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-card .card-header i {
+        color: #2A7DE1;
+    }
+    .ai-insight-card {
+        background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        border: 1px solid rgba(42, 125, 225, 0.15);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        transition: all 0.2s ease;
+    }
+    .ai-insight-card:hover {
+        box-shadow: 0 4px 12px rgba(42, 125, 225, 0.15);
+        transform: translateY(-2px);
+    }
+    .ai-insight-card.trend {
+        background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+        border-color: rgba(34, 197, 94, 0.2);
+    }
+    .ai-insight-card.alert {
+        background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+    .ai-insight-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .ai-insight-card .ai-insight-icon {
+        background: rgba(42, 125, 225, 0.15);
+        color: #2A7DE1;
+    }
+    .ai-insight-card.trend .ai-insight-icon {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22C55E;
+    }
+    .ai-insight-card.alert .ai-insight-icon {
+        background: rgba(245, 158, 11, 0.15);
+        color: #F59E0B;
+    }
+    .ai-insight-content h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+    .ai-insight-content p {
+        font-size: 0.85rem;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.5;
+    }
+    .queue-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .queue-item:last-child {
+        border-bottom: none;
+    }
+    .queue-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #2A7DE1;
+        margin-right: 14px;
+    }
+    .queue-info {
+        flex: 1;
+    }
+    .queue-info .name {
+        font-weight: 500;
+        color: #1E293B;
+    }
+    .queue-info .details {
+        font-size: 0.8rem;
+        color: #64748B;
+    }
+    .queue-status {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .queue-status.waiting {
+        background: rgba(245, 158, 11, 0.12);
+        color: #D97706;
+    }
+    .queue-status.in-progress {
+        background: rgba(14, 165, 233, 0.12);
+        color: #0284C7;
+    }
+    .chart-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        padding: 20px;
+    }
+    .chart-title {
         font-weight: 600;
         color: #1E293B;
         margin-bottom: 16px;
@@ -58,15 +188,84 @@
         align-items: center;
         gap: 8px;
     }
-    .section-title i {
+    .chart-title i {
         color: #2A7DE1;
+    }
+    .appointment-item {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .appointment-item:last-child {
+        border-bottom: none;
+    }
+    .appointment-time {
+        width: 60px;
+        text-align: center;
+        margin-right: 14px;
+    }
+    .appointment-time .time {
+        font-weight: 600;
+        color: #1E293B;
+        font-size: 0.9rem;
+    }
+    .appointment-time .date {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+    .appointment-info {
+        flex: 1;
+    }
+    .appointment-info .name {
+        font-weight: 500;
+        color: #1E293B;
+    }
+    .appointment-info .doctor {
+        font-size: 0.8rem;
+        color: #64748B;
+    }
+    .doctor-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: rgba(42, 125, 225, 0.12);
+        color: #2A7DE1;
+    }
+    .quick-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        color: #64748B;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .quick-action-btn:hover {
+        border-color: #2A7DE1;
+        color: #2A7DE1;
+        background: rgba(42, 125, 225, 0.04);
+        transform: translateY(-2px);
+    }
+    .quick-action-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    .quick-action-btn span {
+        font-size: 0.85rem;
+        font-weight: 500;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="row g-4 mb-4">
-    <div class="col-md-6 col-lg-3">
+    <div class="col-6 col-lg-3">
         <div class="card stat-card-modern">
             <div class="card-body">
                 <div class="stat-icon primary">
@@ -79,7 +278,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-3">
+    <div class="col-6 col-lg-3">
         <div class="card stat-card-modern">
             <div class="card-body">
                 <div class="stat-icon success">
@@ -92,7 +291,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-3">
+    <div class="col-6 col-lg-3">
         <div class="card stat-card-modern">
             <div class="card-body">
                 <div class="stat-icon warning">
@@ -105,7 +304,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-3">
+    <div class="col-6 col-lg-3">
         <div class="card stat-card-modern">
             <div class="card-body">
                 <div class="stat-icon info">
@@ -121,151 +320,211 @@
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="chart-title">
                 <i class="bi bi-graph-up"></i> Weekly Overview
             </div>
-            <div class="card-body">
-                <canvas id="weeklyChart" height="100"></canvas>
+            <canvas id="weeklyChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="section-card h-100">
+            <div class="card-header">
+                <i class="bi bi-robot"></i> AI Insights
+                <button type="button" class="btn btn-sm btn-outline-primary ms-auto" id="btnRefreshInsights">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+            <div class="card-body" id="aiInsightsContainer" style="max-height: 280px; overflow-y: auto;">
+                <div class="ai-insight-card trend">
+                    <div class="ai-insight-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div class="ai-insight-content">
+                        <h6>Patient Traffic</h6>
+                        <p>Click "Get AI Insights" below to analyze today's clinic data.</p>
+                    </div>
+                </div>
+                <div class="ai-insight-card alert">
+                    <div class="ai-insight-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="ai-insight-content">
+                        <h6>Stock Alert</h6>
+                        <p>{% if low_stock_medicines > 0 %}{{ low_stock_medicines }} medicine(s) running low.{% else %}All stock levels normal.{% endif %}</p>
+                    </div>
+                </div>
+                <div class="ai-insight-card">
+                    <div class="ai-insight-icon">
+                        <i class="bi bi-lightbulb"></i>
+                    </div>
+                    <div class="ai-insight-content">
+                        <h6>Tip of the Day</h6>
+                        <p>Use the AI assistant button at bottom-right for quick help.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <button type="button" class="btn btn-primary w-100" id="btnAiInsights">
+                    <i class="bi bi-lightbulb"></i> Get AI Insights
+                </button>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="section-card">
+            <div class="card-header">
+                <i class="bi bi-list-ol"></i> Queue Status
+            </div>
+            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                {% for visit in recent_visits %}
+                <div class="queue-item">
+                    <div class="queue-number">{{ forloop.counter }}</div>
+                    <div class="queue-info">
+                        <div class="name">{{ visit.patient.full_name }}</div>
+                        <div class="details">{{ visit.get_visit_type_display }}</div>
+                    </div>
+                    {% if visit.status == 'waiting' %}
+                    <span class="queue-status waiting">Waiting</span>
+                    {% elif visit.status == 'in_progress' %}
+                    <span class="queue-status in-progress">In Progress</span>
+                    {% else %}
+                    <span class="badge bg-success">Completed</span>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mb-0 mt-2">No patients in queue</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="section-card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-calendar-check"></i> Upcoming Appointments</span>
                 <a href="{% url 'patients:appointment_create' %}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-plus"></i>
                 </a>
             </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    {% for apt in upcoming_appointments %}
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong>{{ apt.patient.full_name }}</strong>
-                                <br><small class="text-muted">{{ apt.appointment_date }} {{ apt.appointment_time }}</small>
-                            </div>
-                            <span class="badge bg-primary">{{ apt.doctor.first_name }}</span>
-                        </div>
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item text-center text-muted">No upcoming appointments</li>
-                    {% endfor %}
-                </ul>
+            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                {% for apt in upcoming_appointments %}
+                <div class="appointment-item">
+                    <div class="appointment-time">
+                        <div class="time">{{ apt.appointment_time|time:"H:i" }}</div>
+                        <div class="date">{{ apt.appointment_date|date:"d M" }}</div>
+                    </div>
+                    <div class="appointment-info">
+                        <div class="name">{{ apt.patient.full_name }}</div>
+                        <div class="doctor">Dr. {{ apt.doctor.first_name }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-calendar" style="font-size: 2rem;"></i>
+                    <p class="mb-0 mt-2">No upcoming appointments</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="section-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-people"></i> Recent Patients</span>
+                <a href="{% url 'patients:patient_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus"></i> New
+                </a>
+            </div>
+            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-hover mb-0">
+                    <tbody>
+                        {% for patient in recent_patients %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'patients:patient_detail' patient.pk %}" class="text-decoration-none">
+                                    <div class="fw-medium text-dark">{{ patient.full_name }}</div>
+                                    <small class="text-muted">{{ patient.patient_id }}</small>
+                                </a>
+                            </td>
+                            <td class="text-end">
+                                <small class="text-muted">{{ patient.phone }}</small>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-4">
+                                <i class="bi bi-people" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">No patients registered</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-clipboard2-pulse"></i> Recent Visits</span>
-                <a href="{% url 'patients:visit_create' %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus"></i> New Visit
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <h6 class="text-muted mb-3"><i class="bi bi-lightning"></i> Quick Actions</h6>
+        <div class="row g-3">
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'patients:patient_create' %}" class="quick-action-btn">
+                    <i class="bi bi-person-plus text-primary"></i>
+                    <span>New Patient</span>
                 </a>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Patient</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for visit in recent_visits %}
-                        <tr>
-                            <td>
-                                <a href="{% url 'patients:visit_detail' visit.pk %}">{{ visit.patient.full_name }}</a>
-                            </td>
-                            <td>{{ visit.get_visit_type_display }}</td>
-                            <td>
-                                {% if visit.status == 'waiting' %}
-                                <span class="badge bg-warning">Waiting</span>
-                                {% elif visit.status == 'in_progress' %}
-                                <span class="badge bg-info">In Progress</span>
-                                {% elif visit.status == 'completed' %}
-                                <span class="badge bg-success">Completed</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center">No visits today</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-people"></i> Recent Patients</span>
-                <a href="{% url 'patients:patient_create' %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus"></i> New Patient
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'patients:visit_create' %}" class="quick-action-btn">
+                    <i class="bi bi-clipboard-plus text-success"></i>
+                    <span>New Visit</span>
                 </a>
             </div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Phone</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for patient in recent_patients %}
-                        <tr>
-                            <td>{{ patient.patient_id }}</td>
-                            <td>
-                                <a href="{% url 'patients:patient_detail' patient.pk %}">{{ patient.full_name }}</a>
-                            </td>
-                            <td>{{ patient.phone }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center">No patients registered</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'patients:appointment_create' %}" class="quick-action-btn">
+                    <i class="bi bi-calendar-plus text-info"></i>
+                    <span>Appointment</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'finance:invoice_create' %}" class="quick-action-btn">
+                    <i class="bi bi-receipt text-warning"></i>
+                    <span>New Invoice</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'management_app:reporting' %}" class="quick-action-btn">
+                    <i class="bi bi-bar-chart text-danger"></i>
+                    <span>Reports</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'setup_app:medicine_list' %}" class="quick-action-btn">
+                    <i class="bi bi-capsule text-purple"></i>
+                    <span>Medicines</span>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 {% if low_stock_medicines > 0 %}
-<div class="alert alert-warning mt-4">
-    <i class="bi bi-exclamation-triangle"></i> 
-    <strong>Low Stock Alert:</strong> {{ low_stock_medicines }} medicine(s) are running low on stock.
-    <a href="{% url 'setup_app:medicine_list' %}?low_stock=1">View Details</a>
+<div class="alert alert-warning d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div>
+        <strong>Low Stock Alert:</strong> {{ low_stock_medicines }} medicine(s) are running low on stock.
+        <a href="{% url 'setup_app:medicine_list' %}?low_stock=1" class="alert-link">View Details</a>
+    </div>
 </div>
 {% endif %}
-
-<div class="card mt-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-robot"></i> AI Insights</span>
-        <button type="button" class="btn btn-outline-info btn-sm" id="btnAiInsights">
-            <i class="bi bi-lightbulb"></i> Get AI Insights
-        </button>
-    </div>
-    <div class="card-body d-none" id="aiInsightsContent">
-        <div id="aiInsightsLoading" class="text-center py-3 d-none">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2">Analyzing clinic data...</p>
-        </div>
-        <div id="aiInsightsResult"></div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -359,15 +618,10 @@ fetch('{% url "management_app:dashboard_data" %}')
 
 document.getElementById('btnAiInsights').addEventListener('click', function() {
     const btn = this;
-    const contentDiv = document.getElementById('aiInsightsContent');
-    const loadingDiv = document.getElementById('aiInsightsLoading');
-    const resultDiv = document.getElementById('aiInsightsResult');
+    const container = document.getElementById('aiInsightsContainer');
     
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
-    contentDiv.classList.remove('d-none');
-    loadingDiv.classList.remove('d-none');
-    resultDiv.innerHTML = '';
     
     fetch('/ai/api/dashboard-insights/', {
         headers: { 'X-CSRFToken': '{{ csrf_token }}' }
@@ -376,35 +630,40 @@ document.getElementById('btnAiInsights').addEventListener('click', function() {
     .then(data => {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-lightbulb"></i> Get AI Insights';
-        loadingDiv.classList.add('d-none');
         
         if (data.success && data.insights) {
-            let html = '<div class="row">';
+            let html = '';
             data.insights.forEach(insight => {
-                let iconClass = 'bi-info-circle text-info';
-                if (insight.type === 'trend') iconClass = 'bi-graph-up text-primary';
-                else if (insight.type === 'alert') iconClass = 'bi-exclamation-triangle text-warning';
+                let cardClass = '';
+                let iconClass = 'bi-lightbulb';
                 
-                html += `<div class="col-md-6 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6><i class="bi ${insight.icon || iconClass}"></i> ${insight.title}</h6>
-                            <p class="mb-0 text-muted small">${insight.message}</p>
-                        </div>
+                if (insight.type === 'trend') {
+                    cardClass = 'trend';
+                    iconClass = 'bi-graph-up-arrow';
+                } else if (insight.type === 'alert') {
+                    cardClass = 'alert';
+                    iconClass = 'bi-exclamation-triangle';
+                }
+                
+                html += `<div class="ai-insight-card ${cardClass}">
+                    <div class="ai-insight-icon">
+                        <i class="bi ${iconClass}"></i>
+                    </div>
+                    <div class="ai-insight-content">
+                        <h6>${insight.title}</h6>
+                        <p>${insight.message}</p>
                     </div>
                 </div>`;
             });
-            html += '</div>';
-            resultDiv.innerHTML = html;
+            container.innerHTML = html;
         } else {
-            resultDiv.innerHTML = `<div class="alert alert-danger">${data.error || 'Failed to get AI insights'}</div>`;
+            container.innerHTML = `<div class="alert alert-danger">${data.error || 'Failed to get AI insights'}</div>`;
         }
     })
     .catch(error => {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-lightbulb"></i> Get AI Insights';
-        loadingDiv.classList.add('d-none');
-        resultDiv.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+        container.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
     });
 });
 </script>

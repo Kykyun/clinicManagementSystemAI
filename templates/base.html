@@ -598,100 +598,100 @@
         </a>
         
         <div class="nav-section">Dashboard</div>
-        <a href="{% url 'management_app:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" title="Dashboard">
+        <a href="{% url 'management_app:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'management_app' %}active{% endif %}" title="Dashboard">
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
         
         <div class="nav-section">Patient</div>
-        <a href="{% url 'patients:patient_list' %}" class="nav-link" title="Patients">
+        <a href="{% url 'patients:patient_list' %}" class="nav-link {% if 'patient' in request.resolver_match.url_name and request.resolver_match.app_name == 'patients' %}active{% endif %}" title="Patients">
             <i class="bi bi-people"></i>
             <span>Patients</span>
         </a>
-        <a href="{% url 'patients:visit_list' %}" class="nav-link" title="Visits">
+        <a href="{% url 'patients:visit_list' %}" class="nav-link {% if 'visit' in request.resolver_match.url_name or 'consultation' in request.resolver_match.url_name %}active{% endif %}" title="Visits">
             <i class="bi bi-clipboard2-pulse"></i>
             <span>Visits</span>
         </a>
-        <a href="{% url 'patients:appointment_list' %}" class="nav-link" title="Appointments">
+        <a href="{% url 'patients:appointment_list' %}" class="nav-link {% if 'appointment' in request.resolver_match.url_name %}active{% endif %}" title="Appointments">
             <i class="bi bi-calendar-check"></i>
             <span>Appointments</span>
         </a>
         
         <div class="nav-section">Finance</div>
-        <a href="{% url 'finance:invoice_list' %}" class="nav-link" title="Invoices">
+        <a href="{% url 'finance:invoice_list' %}" class="nav-link {% if 'invoice' in request.resolver_match.url_name and request.resolver_match.app_name == 'finance' %}active{% endif %}" title="Invoices">
             <i class="bi bi-receipt"></i>
             <span>Invoices</span>
         </a>
-        <a href="{% url 'finance:credit_payment_list' %}" class="nav-link" title="Credit Payments">
+        <a href="{% url 'finance:credit_payment_list' %}" class="nav-link {% if 'credit_payment' in request.resolver_match.url_name %}active{% endif %}" title="Credit Payments">
             <i class="bi bi-credit-card"></i>
             <span>Credit Payments</span>
         </a>
-        <a href="{% url 'einvoice:list' %}" class="nav-link" title="E-Invoice">
+        <a href="{% url 'einvoice:list' %}" class="nav-link {% if request.resolver_match.app_name == 'einvoice' %}active{% endif %}" title="E-Invoice">
             <i class="bi bi-file-earmark-text"></i>
             <span>E-Invoice</span>
         </a>
-        <a href="{% url 'finance:eod_report' %}" class="nav-link" title="EOD Report">
+        <a href="{% url 'finance:eod_report' %}" class="nav-link {% if 'eod' in request.resolver_match.url_name %}active{% endif %}" title="EOD Report">
             <i class="bi bi-file-earmark-bar-graph"></i>
             <span>EOD Report</span>
         </a>
-        <a href="{% url 'finance:supplier_list' %}" class="nav-link" title="Suppliers">
+        <a href="{% url 'finance:supplier_list' %}" class="nav-link {% if 'supplier' in request.resolver_match.url_name %}active{% endif %}" title="Suppliers">
             <i class="bi bi-truck"></i>
             <span>Suppliers</span>
         </a>
-        <a href="{% url 'finance:stock_order_list' %}" class="nav-link" title="Stock Orders">
+        <a href="{% url 'finance:stock_order_list' %}" class="nav-link {% if 'stock_order' in request.resolver_match.url_name %}active{% endif %}" title="Stock Orders">
             <i class="bi bi-box-seam"></i>
             <span>Stock Orders</span>
         </a>
         
         <div class="nav-section">Management</div>
-        <a href="{% url 'management_app:reporting' %}" class="nav-link" title="Reports">
+        <a href="{% url 'management_app:reporting' %}" class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}" title="Reports">
             <i class="bi bi-bar-chart"></i>
             <span>Reports</span>
         </a>
-        <a href="{% url 'management_app:queue_display' %}" class="nav-link" title="Queue">
+        <a href="{% url 'management_app:queue_display' %}" class="nav-link {% if 'queue' in request.resolver_match.url_name %}active{% endif %}" title="Queue">
             <i class="bi bi-list-ol"></i>
             <span>Queue</span>
         </a>
-        <a href="{% url 'management_app:attendance_list' %}" class="nav-link" title="Attendance">
+        <a href="{% url 'management_app:attendance_list' %}" class="nav-link {% if 'attendance' in request.resolver_match.url_name %}active{% endif %}" title="Attendance">
             <i class="bi bi-person-check"></i>
             <span>Attendance</span>
         </a>
         {% if user.role == 'admin' %}
-        <a href="{% url 'accounts:staff_list' %}" class="nav-link" title="Staff">
+        <a href="{% url 'accounts:staff_list' %}" class="nav-link {% if 'staff' in request.resolver_match.url_name %}active{% endif %}" title="Staff">
             <i class="bi bi-person-gear"></i>
             <span>Staff</span>
         </a>
-        <a href="{% url 'management_app:clinic_settings' %}" class="nav-link" title="Settings">
+        <a href="{% url 'management_app:clinic_settings' %}" class="nav-link {% if 'settings' in request.resolver_match.url_name or 'clinic_settings' in request.resolver_match.url_name %}active{% endif %}" title="Settings">
             <i class="bi bi-gear"></i>
             <span>Settings</span>
         </a>
         {% endif %}
         
         <div class="nav-section">Setup</div>
-        <a href="{% url 'setup_app:medicine_list' %}" class="nav-link" title="Medicines">
+        <a href="{% url 'setup_app:medicine_list' %}" class="nav-link {% if 'medicine' in request.resolver_match.url_name %}active{% endif %}" title="Medicines">
             <i class="bi bi-capsule"></i>
             <span>Medicines</span>
         </a>
-        <a href="{% url 'setup_app:lab_test_list' %}" class="nav-link" title="Lab Tests">
+        <a href="{% url 'setup_app:lab_test_list' %}" class="nav-link {% if 'lab_test' in request.resolver_match.url_name %}active{% endif %}" title="Lab Tests">
             <i class="bi bi-droplet"></i>
             <span>Lab Tests</span>
         </a>
-        <a href="{% url 'setup_app:fee_list' %}" class="nav-link" title="Fees">
+        <a href="{% url 'setup_app:fee_list' %}" class="nav-link {% if 'fee' in request.resolver_match.url_name and request.resolver_match.app_name == 'setup_app' %}active{% endif %}" title="Fees">
             <i class="bi bi-cash-coin"></i>
             <span>Fees</span>
         </a>
-        <a href="{% url 'setup_app:panel_list' %}" class="nav-link" title="Panels">
+        <a href="{% url 'setup_app:panel_list' %}" class="nav-link {% if 'panel' in request.resolver_match.url_name %}active{% endif %}" title="Panels">
             <i class="bi bi-building"></i>
             <span>Panels</span>
         </a>
         
         {% if user.role == 'admin' %}
         <div class="nav-section">AI Features</div>
-        <a href="{% url 'ai:config' %}" class="nav-link" title="AI Configuration">
+        <a href="{% url 'ai:config' %}" class="nav-link {% if request.resolver_match.app_name == 'ai' and 'config' in request.resolver_match.url_name %}active{% endif %}" title="AI Configuration">
             <i class="bi bi-robot"></i>
             <span>AI Config</span>
         </a>
-        <a href="{% url 'ai:logs' %}" class="nav-link" title="AI Logs">
+        <a href="{% url 'ai:logs' %}" class="nav-link {% if request.resolver_match.app_name == 'ai' and 'logs' in request.resolver_match.url_name %}active{% endif %}" title="AI Logs">
             <i class="bi bi-journal-text"></i>
             <span>AI Logs</span>
         </a>

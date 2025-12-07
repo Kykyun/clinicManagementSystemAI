@@ -3,66 +3,256 @@
 {% block title %}Patients{% endblock %}
 {% block page_title %}Patients{% endblock %}
 
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-header h4 {
+        font-weight: 600;
+        color: #1E293B;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .page-header h4 i {
+        color: #2A7DE1;
+    }
+    .search-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .search-input-group {
+        display: flex;
+        gap: 12px;
+    }
+    .search-input-group .form-control {
+        flex: 1;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+    .search-input-group .form-control:focus {
+        border-color: #2A7DE1;
+        box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.12);
+    }
+    .search-btn {
+        background: #2A7DE1;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        color: #fff;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    .search-btn:hover {
+        background: #1E6BC9;
+        transform: translateY(-1px);
+    }
+    .data-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .data-card .table {
+        margin: 0;
+    }
+    .data-card .table thead th {
+        background: #F8FAFC;
+        color: #64748B;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    .data-card .table tbody td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #F1F5F9;
+        color: #1E293B;
+    }
+    .data-card .table tbody tr:hover {
+        background: rgba(42, 125, 225, 0.04);
+    }
+    .data-card .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .patient-id {
+        background: rgba(42, 125, 225, 0.1);
+        color: #2A7DE1;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        font-family: 'Monaco', 'Consolas', monospace;
+    }
+    .patient-name {
+        color: #1E293B;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    .patient-name:hover {
+        color: #2A7DE1;
+    }
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #E2E8F0;
+        background: #fff;
+        color: #64748B;
+        transition: all 0.2s ease;
+        margin-right: 6px;
+    }
+    .action-btn:hover {
+        border-color: #2A7DE1;
+        color: #2A7DE1;
+        background: rgba(42, 125, 225, 0.08);
+    }
+    .action-btn.view:hover {
+        border-color: #2A7DE1;
+        color: #2A7DE1;
+    }
+    .action-btn.visit:hover {
+        border-color: #22C55E;
+        color: #22C55E;
+        background: rgba(34, 197, 94, 0.08);
+    }
+    .action-btn.edit:hover {
+        border-color: #F59E0B;
+        color: #F59E0B;
+        background: rgba(245, 158, 11, 0.08);
+    }
+    .register-btn {
+        background: #2A7DE1;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        color: #fff;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    .register-btn:hover {
+        background: #1E6BC9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(42, 125, 225, 0.3);
+        color: #fff;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #64748B;
+    }
+    .empty-state i {
+        font-size: 3rem;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+    .gender-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .gender-badge.male {
+        background: rgba(14, 165, 233, 0.1);
+        color: #0EA5E9;
+    }
+    .gender-badge.female {
+        background: rgba(236, 72, 153, 0.1);
+        color: #EC4899;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-people"></i> Patient List</span>
-        <a href="{% url 'patients:patient_create' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Register Patient
-        </a>
-    </div>
-    <div class="card-body">
-        <form method="get" class="mb-3">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Search by name, ID, or phone..." value="{{ query }}">
-                <button type="submit" class="btn btn-outline-primary">
-                    <i class="bi bi-search"></i> Search
-                </button>
-            </div>
-        </form>
-        
-        <table class="table table-hover data-table">
-            <thead>
-                <tr>
-                    <th>Patient ID</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Gender</th>
-                    <th>Phone</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for patient in patients %}
-                <tr>
-                    <td><code>{{ patient.patient_id }}</code></td>
-                    <td>
-                        <a href="{% url 'patients:patient_detail' patient.pk %}">{{ patient.full_name }}</a>
-                    </td>
-                    <td>{{ patient.age }} yrs</td>
-                    <td>{{ patient.get_gender_display }}</td>
-                    <td>{{ patient.phone }}</td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="{% url 'patients:patient_detail' patient.pk %}" class="btn btn-outline-primary btn-action" title="View">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{% url 'patients:visit_create_for_patient' patient.pk %}" class="btn btn-outline-success btn-action" title="New Visit">
-                                <i class="bi bi-clipboard-plus"></i>
-                            </a>
-                            <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-outline-secondary btn-action" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">No patients found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="page-header">
+    <h4><i class="bi bi-people"></i> Patient List</h4>
+    <a href="{% url 'patients:patient_create' %}" class="register-btn">
+        <i class="bi bi-plus-lg"></i> Register Patient
+    </a>
+</div>
+
+<div class="search-card">
+    <form method="get">
+        <div class="search-input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search by name, ID, or phone..." value="{{ query }}">
+            <button type="submit" class="search-btn">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="data-card">
+    <table class="table table-hover data-table">
+        <thead>
+            <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr>
+                <td><span class="patient-id">{{ patient.patient_id }}</span></td>
+                <td>
+                    <a href="{% url 'patients:patient_detail' patient.pk %}" class="patient-name">{{ patient.full_name }}</a>
+                </td>
+                <td>{{ patient.age }} yrs</td>
+                <td>
+                    <span class="gender-badge {% if patient.gender == 'M' %}male{% else %}female{% endif %}">
+                        {{ patient.get_gender_display }}
+                    </span>
+                </td>
+                <td>{{ patient.phone }}</td>
+                <td>
+                    <a href="{% url 'patients:patient_detail' patient.pk %}" class="action-btn view" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{% url 'patients:visit_create_for_patient' patient.pk %}" class="action-btn visit" title="New Visit">
+                        <i class="bi bi-clipboard-plus"></i>
+                    </a>
+                    <a href="{% url 'patients:patient_edit' patient.pk %}" class="action-btn edit" title="Edit Patient">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <i class="bi bi-people"></i>
+                        <p>No patients found.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
