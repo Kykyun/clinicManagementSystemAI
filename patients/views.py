@@ -154,6 +154,8 @@ def consultation_create(request, visit_id):
             return redirect('patients:consultation_detail', pk=consultation.pk)
     else:
         initial_data = {}
+        if visit.reason:
+            initial_data['chief_complaint'] = visit.reason
         if hasattr(visit, 'triage') and visit.triage:
             triage = visit.triage
             if triage.bp_systolic and triage.bp_diastolic:
@@ -166,6 +168,8 @@ def consultation_create(request, visit_id):
                 initial_data['vitals_weight'] = triage.weight
             if triage.height:
                 initial_data['vitals_height'] = triage.height
+            if triage.notes and not initial_data.get('chief_complaint'):
+                initial_data['chief_complaint'] = triage.notes
         form = ConsultationForm(initial=initial_data)
     
     past_visits = Visit.objects.filter(
