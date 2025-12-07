@@ -565,10 +565,13 @@ def ai_suggest_prescriptions(consultation_data: Dict, available_medicines: list,
     if not service.is_enabled('assistant'):
         return {"success": False, "error": "AI prescription suggestions are not enabled"}
     
-    medicines_list = "\n".join([
-        f"- {med['name']} ({med.get('generic_name', '')}) - {med.get('strength', '')} {med.get('form', '')}"
-        for med in available_medicines[:100]
-    ]) if available_medicines else "No medicines in database."
+    if available_medicines:
+        medicines_list = "\n".join([
+            f"- {med['name']} ({med.get('generic_name', '')}) - {med.get('strength', '')} {med.get('form', '')}"
+            for med in available_medicines[:100]
+        ])
+    else:
+        medicines_list = "No medicines currently in the clinic inventory. You may suggest common medicines and set is_new_medicine to true for all."
     
     prompt = f"""Based on this consultation, suggest appropriate prescriptions.
 
@@ -617,15 +620,21 @@ Only respond with valid JSON."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_gemini(messages, user, "assistant")
+    success, response, meta = service._call_gemini(messages, user, "prescription_suggestions")
     
     if not success:
         return {"success": False, "error": response}
     
+    if not response or not response.strip():
+        return {"success": False, "error": "AI returned an empty response. Please try again."}
+    
     try:
-        result = json.loads(service._clean_json_response(response))
+        cleaned_response = service._clean_json_response(response)
+        result = json.loads(cleaned_response)
         result["success"] = True
         result["disclaimer"] = "AI-suggested prescriptions require clinician review. Verify dosages and check for contraindications."
         return result
-    except json.JSONDecodeError:
-        return {"success": False, "error": "Failed to parse AI response", "raw_response": response}
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse prescription AI response: {e}")
+        logger.error(f"Raw response: {response[:500] if response else 'None'}")
+        return {"success": False, "error": f"Failed to parse AI response. The AI may have returned an invalid format.", "raw_response": response[:500] if response else ""}
