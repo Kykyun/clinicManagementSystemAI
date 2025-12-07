@@ -445,7 +445,7 @@ Provide 3-5 most relevant insights. Only respond with valid JSON."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_gemini(messages, user, "dashboard_insight", max_tokens=800)
+    success, response, meta = service._call_gemini(messages, user, "dashboard_insight", max_tokens=4096)
     
     if not success:
         return {"success": False, "error": response}
