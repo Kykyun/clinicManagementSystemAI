@@ -193,6 +193,7 @@ def ai_structure_consultation_notes(raw_notes: str, user=None) -> Dict[str, Any]
         return {"success": False, "error": "Consultation notes AI is not enabled"}
     
     prompt = f"""Structure these clinical notes into a proper medical consultation format.
+Also extract any vital signs mentioned in the notes.
 
 Raw Notes:
 {raw_notes}
@@ -203,15 +204,24 @@ Respond in JSON format:
     "examination": "Physical examination findings",
     "assessment": "Clinical assessment and possible diagnoses",
     "plan": "Treatment plan and follow-up",
+    "vitals": {{
+        "bp": "systolic/diastolic format like 120/80 if found, otherwise null",
+        "pulse": numeric pulse rate if found (e.g., 72), otherwise null,
+        "temp": numeric temperature in Celsius if found (e.g., 37.5), otherwise null,
+        "weight": numeric weight in kg if found, otherwise null,
+        "height": numeric height in cm if found, otherwise null
+    }},
     "suggested_icd10_codes": [
         {{"code": "J06.9", "description": "Acute upper respiratory infection"}}
     ]
 }}
 
+Look for vital signs in keywords like: BP, Blood Pressure, PR, Pulse, HR, Heart Rate, Temp, Temperature, Weight, Height.
+Common patterns: "BP 120/80", "PR 72 bpm", "Temp 37.5C", "Weight 70kg".
 Only respond with valid JSON. The ICD-10 codes are suggestions only."""
 
     messages = [
-        {"role": "system", "content": "You are a medical documentation assistant. Structure clinical notes into standard SOAP/consultation format. Suggest relevant ICD-10 codes as hints only - final coding must be done by the clinician."},
+        {"role": "system", "content": "You are a medical documentation assistant. Structure clinical notes into standard SOAP/consultation format. Extract vital signs from the notes carefully. Suggest relevant ICD-10 codes as hints only - final coding must be done by the clinician."},
         {"role": "user", "content": prompt}
     ]
     

@@ -255,6 +255,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('aiAssessment').value = data.assessment || '';
                 document.getElementById('aiPlan').value = data.plan || '';
                 
+                window.aiVitalsData = data.vitals || {};
+                
                 const icd10Container = document.getElementById('aiIcd10Codes');
                 icd10Container.innerHTML = '';
                 if (data.suggested_icd10_codes && data.suggested_icd10_codes.length > 0) {
@@ -264,6 +266,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     html += '</div>';
                     icd10Container.innerHTML = html;
+                }
+                
+                if (data.vitals) {
+                    let vitalsHtml = '<h6 class="small mt-3">Extracted Vitals</h6><div class="d-flex flex-wrap gap-2">';
+                    if (data.vitals.bp) vitalsHtml += `<span class="badge bg-info">BP: ${data.vitals.bp}</span>`;
+                    if (data.vitals.pulse) vitalsHtml += `<span class="badge bg-info">Pulse: ${data.vitals.pulse}</span>`;
+                    if (data.vitals.temp) vitalsHtml += `<span class="badge bg-info">Temp: ${data.vitals.temp}°C</span>`;
+                    if (data.vitals.weight) vitalsHtml += `<span class="badge bg-info">Weight: ${data.vitals.weight}kg</span>`;
+                    if (data.vitals.height) vitalsHtml += `<span class="badge bg-info">Height: ${data.vitals.height}cm</span>`;
+                    vitalsHtml += '</div>';
+                    if (data.vitals.bp || data.vitals.pulse || data.vitals.temp || data.vitals.weight || data.vitals.height) {
+                        icd10Container.innerHTML += vitalsHtml;
+                    }
                 }
             } else {
                 document.getElementById('aiError').style.display = 'block';
@@ -294,6 +309,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (plan) {
             document.getElementById('id_treatment_plan').value = plan;
+        }
+        
+        if (window.aiVitalsData) {
+            const vitals = window.aiVitalsData;
+            if (vitals.bp) {
+                document.getElementById('id_vitals_bp').value = vitals.bp;
+            }
+            if (vitals.pulse) {
+                document.getElementById('id_vitals_pulse').value = vitals.pulse;
+            }
+            if (vitals.temp) {
+                document.getElementById('id_vitals_temp').value = vitals.temp;
+            }
+            if (vitals.weight) {
+                document.getElementById('id_vitals_weight').value = vitals.weight;
+            }
+            if (vitals.height) {
+                document.getElementById('id_vitals_height').value = vitals.height;
+            }
         }
         
         const modal = bootstrap.Modal.getInstance(document.getElementById('aiNotesModal'));
