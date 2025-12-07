@@ -40,7 +40,7 @@
             <div class="col-md-4">
                 <div class="card bg-success text-white">
                     <div class="card-body text-center">
-                        <h3>${{ report.total_revenue|floatformat:2 }}</h3>
+                        <h3>RM {{ report.total_revenue|floatformat:2 }}</h3>
                         <p class="mb-0">Total Revenue</p>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
             <div class="col-md-4">
                 <div class="card bg-info text-white">
                     <div class="card-body text-center">
-                        <h3>${{ report.total_cash|floatformat:2 }}</h3>
+                        <h3>RM {{ report.total_cash|floatformat:2 }}</h3>
                         <p class="mb-0">Cash Collections</p>
                     </div>
                 </div>
@@ -61,23 +61,23 @@
         <table class="table">
             <tr>
                 <td>Cash</td>
-                <td class="text-end">${{ report.total_cash|floatformat:2 }}</td>
+                <td class="text-end">RM {{ report.total_cash|floatformat:2 }}</td>
             </tr>
             <tr>
                 <td>Card</td>
-                <td class="text-end">${{ report.total_card|floatformat:2 }}</td>
+                <td class="text-end">RM {{ report.total_card|floatformat:2 }}</td>
             </tr>
             <tr>
                 <td>E-Wallet</td>
-                <td class="text-end">${{ report.total_ewallet|floatformat:2 }}</td>
+                <td class="text-end">RM {{ report.total_ewallet|floatformat:2 }}</td>
             </tr>
             <tr>
                 <td>Credit</td>
-                <td class="text-end">${{ report.total_credit|floatformat:2 }}</td>
+                <td class="text-end">RM {{ report.total_credit|floatformat:2 }}</td>
             </tr>
             <tr class="table-primary">
                 <td><strong>Total</strong></td>
-                <td class="text-end"><strong>${{ report.total_revenue|floatformat:2 }}</strong></td>
+                <td class="text-end"><strong>RM {{ report.total_revenue|floatformat:2 }}</strong></td>
             </tr>
         </table>
         
@@ -134,7 +134,7 @@
             </tr>
             <tr class="table-success">
                 <td><strong>Valid E-Invoice Amount</strong></td>
-                <td class="text-end"><strong>${{ einvoice_stats.total_amount|floatformat:2|default:"0.00" }}</strong></td>
+                <td class="text-end"><strong>RM {{ einvoice_stats.total_amount|floatformat:2|default:"0.00" }}</strong></td>
             </tr>
         </table>
         

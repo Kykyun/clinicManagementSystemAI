@@ -33,7 +33,7 @@
     <div class="col-md-3">
         <div class="card stat-card" style="border-left-color: #20c997;">
             <div class="card-body">
-                <div class="stat-value" style="color: #20c997;">${{ revenue_today|floatformat:2 }}</div>
+                <div class="stat-value" style="color: #20c997;">RM {{ revenue_today|floatformat:2 }}</div>
                 <div class="stat-label">Revenue Today</div>
             </div>
         </div>
@@ -206,7 +206,7 @@ fetch('{% url "management_app:dashboard_data" %}')
                     fill: true,
                     tension: 0.4
                 }, {
-                    label: 'Revenue ($)',
+                    label: 'Revenue (RM)',
                     data: data.revenue,
                     borderColor: '#20c997',
                     backgroundColor: 'rgba(32, 201, 151, 0.1)',

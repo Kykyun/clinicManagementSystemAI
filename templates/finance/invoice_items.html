@@ -25,8 +25,8 @@
                             <td>{{ item.get_item_type_display }}</td>
                             <td>{{ item.description }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>${{ item.unit_price|floatformat:2 }}</td>
-                            <td>${{ item.total|floatformat:2 }}</td>
+                            <td>RM {{ item.unit_price|floatformat:2 }}</td>
+                            <td>RM {{ item.total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="5" class="text-center">No items added yet.</td></tr>

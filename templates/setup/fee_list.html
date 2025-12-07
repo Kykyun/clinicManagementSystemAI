@@ -28,7 +28,7 @@
                     <td>{{ f.code }}</td>
                     <td>{{ f.name }}</td>
                     <td>{{ f.category|default:"-" }}</td>
-                    <td>${{ f.amount }}</td>
+                    <td>RM {{ f.amount }}</td>
                     <td>
                         <a href="{% url 'setup_app:fee_edit' f.pk %}" class="btn btn-outline-primary btn-action">
                             <i class="bi bi-pencil"></i>

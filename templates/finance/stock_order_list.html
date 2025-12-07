@@ -47,7 +47,7 @@
                     <td>{{ order.supplier.name }}</td>
                     <td>{{ order.order_date }}</td>
                     <td>{{ order.expected_delivery|default:"-" }}</td>
-                    <td>${{ order.total_amount|floatformat:2 }}</td>
+                    <td>RM {{ order.total_amount|floatformat:2 }}</td>
                     <td>
                         {% if order.status == 'pending' %}
                         <span class="badge bg-secondary">Pending</span>

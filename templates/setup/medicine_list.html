@@ -45,7 +45,7 @@
                     <td>{{ m.name }}</td>
                     <td>{{ m.generic_name|default:"-" }}</td>
                     <td>{{ m.get_category_display }}</td>
-                    <td>${{ m.unit_price }}</td>
+                    <td>RM {{ m.unit_price }}</td>
                     <td>
                         {% if m.stock_quantity <= m.minimum_stock %}
                         <span class="badge bg-danger">{{ m.stock_quantity }}</span>

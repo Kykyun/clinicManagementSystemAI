@@ -27,7 +27,7 @@
                 <tr>
                     <td>{{ d.name }}</td>
                     <td>{{ d.unit|default:"-" }}</td>
-                    <td>${{ d.unit_price }}</td>
+                    <td>RM {{ d.unit_price }}</td>
                     <td>
                         {% if d.stock_quantity <= d.minimum_stock %}
                         <span class="badge bg-danger">{{ d.stock_quantity }}</span>

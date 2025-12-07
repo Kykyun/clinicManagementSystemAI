@@ -27,7 +27,7 @@
                         <h5 class="card-title">{{ p.name }}</h5>
                         <p class="card-text text-muted">{{ p.description|truncatewords:20 }}</p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="h5 mb-0 text-primary">${{ p.price }}</span>
+                            <span class="h5 mb-0 text-primary">RM {{ p.price }}</span>
                             {% if p.is_active %}
                             <span class="badge bg-success">Active</span>
                             {% else %}

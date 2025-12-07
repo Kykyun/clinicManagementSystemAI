@@ -23,8 +23,8 @@
                         <tr>
                             <td>{{ item.medicine.name|default:item.disposable.name }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>${{ item.unit_price|floatformat:2 }}</td>
-                            <td>${{ item.total|floatformat:2 }}</td>
+                            <td>RM {{ item.unit_price|floatformat:2 }}</td>
+                            <td>RM {{ item.total|floatformat:2 }}</td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="4" class="text-center">No items added.</td></tr>
@@ -33,7 +33,7 @@
                     <tfoot>
                         <tr class="table-primary">
                             <td colspan="3"><strong>Total:</strong></td>
-                            <td><strong>${{ order.total_amount|floatformat:2 }}</strong></td>
+                            <td><strong>RM {{ order.total_amount|floatformat:2 }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>

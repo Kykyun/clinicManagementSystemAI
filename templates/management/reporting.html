@@ -54,7 +54,7 @@
         <div class="card stat-card h-100" style="border-left-color: #198754;">
             <div class="card-body">
                 <div class="stat-label">Total Revenue</div>
-                <div class="stat-value" style="color: #198754;">${{ total_revenue|floatformat:2|intcomma }}</div>
+                <div class="stat-value" style="color: #198754;">RM {{ total_revenue|floatformat:2|intcomma }}</div>
                 <small class="text-muted">{{ start_date }} to {{ end_date }}</small>
             </div>
         </div>
@@ -79,7 +79,7 @@
                         {% for item in revenue_by_method %}
                         <tr>
                             <td>{{ item.payment_method|title }}</td>
-                            <td>${{ item.total|floatformat:2|intcomma }}</td>
+                            <td>RM {{ item.total|floatformat:2|intcomma }}</td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="2" class="text-center">No data</td></tr>

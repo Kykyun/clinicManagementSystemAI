@@ -28,7 +28,7 @@
                     <td>{{ t.code }}</td>
                     <td>{{ t.name }}</td>
                     <td>{{ t.category|default:"-" }}</td>
-                    <td>${{ t.price }}</td>
+                    <td>RM {{ t.price }}</td>
                     <td>
                         <a href="{% url 'setup_app:lab_test_edit' t.pk %}" class="btn btn-outline-primary btn-action">
                             <i class="bi bi-pencil"></i>

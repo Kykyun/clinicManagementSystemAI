@@ -10,7 +10,7 @@
             <div class="card-header">Payment for {{ invoice.invoice_number }}</div>
             <div class="card-body">
                 <div class="alert alert-info">
-                    <strong>Outstanding Balance:</strong> ${{ invoice.outstanding_balance|floatformat:2 }}
+                    <strong>Outstanding Balance:</strong> RM {{ invoice.outstanding_balance|floatformat:2 }}
                 </div>
                 <form method="post">
                     {% csrf_token %}
