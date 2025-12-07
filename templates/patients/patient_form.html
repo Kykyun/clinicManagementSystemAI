@@ -21,15 +21,28 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">ID Type *</label>
+                            {{ form.id_type }}
+                        </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">ID/Passport Number</label>
                             {{ form.id_number }}
+                            <div class="form-text" id="id_number_help">
+                                <span id="nric_help">Enter 12 digits (YYMMDD-PP-####)</span>
+                                <span id="passport_help" style="display:none;">Enter passport number</span>
+                            </div>
+                            <div class="invalid-feedback" id="id_number_error"></div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Date of Birth *</label>
                             {{ form.date_of_birth }}
+                            <div class="form-text" id="dob_help">
+                                <span id="dob_auto_help">Auto-filled from NRIC</span>
+                                <span id="dob_manual_help" style="display:none;">Enter date manually</span>
+                            </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-2 mb-3">
                             <label class="form-label">Gender *</label>
                             {{ form.gender }}
                         </div>
@@ -93,4 +106,173 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const idTypeSelect = document.getElementById('id_id_type');
+    const idNumberInput = document.getElementById('id_id_number');
+    const dobInput = document.getElementById('id_date_of_birth');
+    const nricHelp = document.getElementById('nric_help');
+    const passportHelp = document.getElementById('passport_help');
+    const dobAutoHelp = document.getElementById('dob_auto_help');
+    const dobManualHelp = document.getElementById('dob_manual_help');
+    const idNumberError = document.getElementById('id_number_error');
+    
+    function formatNRIC(value) {
+        const digits = value.replace(/\D/g, '');
+        let formatted = '';
+        for (let i = 0; i < digits.length && i < 12; i++) {
+            if (i === 6 || i === 8) {
+                formatted += '-';
+            }
+            formatted += digits[i];
+        }
+        return formatted;
+    }
+    
+    function extractDOBFromNRIC(nric) {
+        const digits = nric.replace(/\D/g, '');
+        if (digits.length < 6) return null;
+        
+        const year = parseInt(digits.substring(0, 2));
+        const month = digits.substring(2, 4);
+        const day = digits.substring(4, 6);
+        
+        const currentYear = new Date().getFullYear() % 100;
+        let fullYear;
+        if (year <= currentYear) {
+            fullYear = 2000 + year;
+        } else {
+            fullYear = 1900 + year;
+        }
+        
+        const dateStr = `${fullYear}-${month}-${day}`;
+        const testDate = new Date(dateStr);
+        if (isNaN(testDate.getTime())) return null;
+        if (testDate > new Date()) return null;
+        
+        return dateStr;
+    }
+    
+    function validateNRIC(value) {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length !== 12) {
+            return { valid: false, message: 'NRIC must be exactly 12 digits' };
+        }
+        
+        const year = parseInt(digits.substring(0, 2));
+        const month = parseInt(digits.substring(2, 4));
+        const day = parseInt(digits.substring(4, 6));
+        
+        if (month < 1 || month > 12) {
+            return { valid: false, message: 'Invalid month in NRIC' };
+        }
+        if (day < 1 || day > 31) {
+            return { valid: false, message: 'Invalid day in NRIC' };
+        }
+        
+        const dob = extractDOBFromNRIC(value);
+        if (!dob) {
+            return { valid: false, message: 'Invalid date in NRIC or date is in the future' };
+        }
+        
+        return { valid: true, message: '' };
+    }
+    
+    function updateIDTypeUI() {
+        const isNRIC = idTypeSelect.value === 'nric';
+        
+        nricHelp.style.display = isNRIC ? 'inline' : 'none';
+        passportHelp.style.display = isNRIC ? 'none' : 'inline';
+        dobAutoHelp.style.display = isNRIC ? 'inline' : 'none';
+        dobManualHelp.style.display = isNRIC ? 'none' : 'inline';
+        
+        if (isNRIC) {
+            idNumberInput.setAttribute('maxlength', '14');
+            idNumberInput.setAttribute('placeholder', 'YYMMDD-PP-####');
+        } else {
+            idNumberInput.setAttribute('maxlength', '20');
+            idNumberInput.setAttribute('placeholder', 'Passport number');
+        }
+        
+        idNumberError.textContent = '';
+        idNumberInput.classList.remove('is-invalid');
+    }
+    
+    function handleNRICInput() {
+        if (idTypeSelect.value !== 'nric') return;
+        
+        const cursorPos = idNumberInput.selectionStart;
+        const oldValue = idNumberInput.value;
+        const oldDigitsBeforeCursor = oldValue.substring(0, cursorPos).replace(/\D/g, '').length;
+        
+        const formatted = formatNRIC(idNumberInput.value);
+        idNumberInput.value = formatted;
+        
+        let newCursorPos = 0;
+        let digitCount = 0;
+        for (let i = 0; i < formatted.length && digitCount < oldDigitsBeforeCursor; i++) {
+            newCursorPos = i + 1;
+            if (/\d/.test(formatted[i])) {
+                digitCount++;
+            }
+        }
+        idNumberInput.setSelectionRange(newCursorPos, newCursorPos);
+        
+        const digits = formatted.replace(/\D/g, '');
+        if (digits.length === 12) {
+            const validation = validateNRIC(formatted);
+            if (validation.valid) {
+                const dob = extractDOBFromNRIC(formatted);
+                if (dob && !dobInput.value) {
+                    dobInput.value = dob;
+                }
+                idNumberError.textContent = '';
+                idNumberInput.classList.remove('is-invalid');
+            } else {
+                idNumberError.textContent = validation.message;
+                idNumberInput.classList.add('is-invalid');
+            }
+        } else if (digits.length === 6) {
+            const dob = extractDOBFromNRIC(formatted);
+            if (dob) {
+                dobInput.value = dob;
+            }
+        }
+    }
+    
+    idTypeSelect.addEventListener('change', function() {
+        updateIDTypeUI();
+        if (idTypeSelect.value === 'nric' && idNumberInput.value) {
+            idNumberInput.value = formatNRIC(idNumberInput.value);
+            handleNRICInput();
+        }
+    });
+    
+    idNumberInput.addEventListener('input', handleNRICInput);
+    
+    idNumberInput.addEventListener('keydown', function(e) {
+        if (idTypeSelect.value !== 'nric') return;
+        
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+            return;
+        }
+        
+        if (!/[\d]/.test(e.key) && e.key.length === 1) {
+            e.preventDefault();
+        }
+    });
+    
+    updateIDTypeUI();
+    
+    if (idTypeSelect.value === 'nric' && idNumberInput.value) {
+        const digits = idNumberInput.value.replace(/\D/g, '');
+        if (digits.length === 12 && !idNumberInput.value.includes('-')) {
+            idNumberInput.value = formatNRIC(digits);
+        }
+    }
+});
+</script>
 {% endblock %}

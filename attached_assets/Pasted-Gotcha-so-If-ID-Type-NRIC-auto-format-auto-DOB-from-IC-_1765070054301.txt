@@ -1,0 +1,130 @@
+Gotcha – so:
+
+* **If ID Type = NRIC** → auto-format + auto DOB from IC
+* **If ID Type = Passport** → free text, DOB entered manually, no auto-stuff
+
+Here’s an updated **prompt** you can paste into your code generator (includes that logic):
+
+---
+
+### PROMPT: Malaysian NRIC vs Passport Input + DOB Handling
+
+You are an expert frontend + backend developer.
+Add an **ID/Passport Number** section to my clinic management system with the following behavior.
+
+#### 1. Fields
+
+Create these fields on the patient registration form:
+
+1. **ID Type** – dropdown:
+
+   * Options: `NRIC`, `Passport`
+   * Default: `NRIC`
+
+2. **ID/Passport Number** – text input
+
+3. **Date of Birth** – date input
+
+#### 2. Behavior when ID Type = **NRIC**
+
+For Malaysian NRIC:
+
+* Input is **12 digits** and must be auto-formatted as:
+
+  `YYMMDD-PP-####`
+
+  Example:
+
+  * User types: `030811121509`
+  * Displayed as: `030811-12-1509`
+
+* While typing:
+
+  * Only digits allowed.
+  * Auto-insert hyphens after 6 and 8 digits.
+  * Max length including hyphens: 14 characters.
+
+* **Auto-fill Date of Birth from IC**:
+
+  * Take first 6 digits (YYMMDD) → compute DOB.
+  * **Century rule**:
+
+    * If `YY` ≤ current year (e.g. 25 in 2025) → `20YY`
+    * Else → `19YY`
+  * Example:
+
+    * `030811-12-1509` → DOB = `2003-08-11`
+
+* **Validation rules**:
+
+  * Must be 12 digits (before formatting).
+  * Date (YYMMDD) must be a valid calendar date.
+  * DOB must **not be in the future**.
+  * If invalid, show clear error message and don’t auto-fill DOB.
+
+* When ID Type = `NRIC`:
+
+  * Date of Birth field is **auto-filled & editable** (user can still override if needed).
+  * IC input enforces numeric + `YYMMDD-PP-####` pattern.
+
+#### 3. Behavior when ID Type = **Passport**
+
+For Passport:
+
+* No special pattern enforced (just a reasonable max length, e.g. 20).
+
+* Allow alphanumeric characters (letters + digits) and optional symbols like `/` or `-` if you think appropriate.
+
+* **No auto-formatting** and **no auto DOB extraction**.
+
+* The Date of Birth field:
+
+  * Must be entered **manually** by the user.
+  * Still validated as:
+
+    * Valid date
+    * Not in the future
+
+* When ID Type switches from NRIC → Passport:
+
+  * Remove any NRIC-specific masking/format.
+  * Do **not** attempt to parse DOB from the passport number.
+  * Keep previously entered DOB unless user changes it.
+
+#### 4. Technical Output Requested
+
+Please generate:
+
+**A. Frontend code (plain HTML + JavaScript, or any simple framework):**
+
+* The dropdown for ID Type.
+* The text input for ID/Passport.
+* The date input for DOB.
+* JavaScript that:
+
+  * Watches changes to ID Type and applies the correct behavior.
+  * Applies NRIC formatting + DOB extraction only when ID Type = NRIC.
+  * Disables that logic when ID Type = Passport.
+
+**B. Backend validation (optional but preferred):**
+
+* Either:
+
+  * **Django form / model validator**, or
+  * **Flask WTForms / pydantic validator**,
+
+that:
+
+* Validates NRIC pattern and DOB logic on the server side.
+* For Passport, only checks:
+
+  * Non-empty
+  * Reasonable length
+  * Allowed characters
+* Ensures DOB is not future-dated.
+
+Use clean, well-commented code so I can easily integrate it into an existing Django or Flask project.
+
+---
+
+You can drop that straight into your AI/code tool. If you tell me whether you’re on **Django or Flask**, I can also write the actual validator code for you instead of just the prompt.

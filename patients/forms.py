@@ -1,19 +1,63 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from datetime import date, datetime
+import re
 from .models import Patient, Visit, Consultation, Prescription, Appointment, LabResult, Immunization
+
+
+def validate_nric(value):
+    digits_only = re.sub(r'[^0-9]', '', value)
+    if len(digits_only) != 12:
+        raise ValidationError('NRIC must be exactly 12 digits.')
+    
+    year = int(digits_only[0:2])
+    month = int(digits_only[2:4])
+    day = int(digits_only[4:6])
+    
+    current_year = date.today().year % 100
+    if year <= current_year:
+        full_year = 2000 + year
+    else:
+        full_year = 1900 + year
+    
+    try:
+        dob = date(full_year, month, day)
+    except ValueError:
+        raise ValidationError('NRIC contains an invalid date (YYMMDD).')
+    
+    if dob > date.today():
+        raise ValidationError('Date of birth from NRIC cannot be in the future.')
+    
+    return digits_only
+
+
+def extract_dob_from_nric(nric_digits):
+    year = int(nric_digits[0:2])
+    month = int(nric_digits[2:4])
+    day = int(nric_digits[4:6])
+    
+    current_year = date.today().year % 100
+    if year <= current_year:
+        full_year = 2000 + year
+    else:
+        full_year = 1900 + year
+    
+    return date(full_year, month, day)
 
 
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'id_number', 'date_of_birth', 'gender',
+        fields = ['first_name', 'last_name', 'id_type', 'id_number', 'date_of_birth', 'gender',
                   'phone', 'email', 'address', 'emergency_contact_name', 
                   'emergency_contact_phone', 'allergies', 'chronic_illnesses', 
                   'blood_type', 'panel', 'notes']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'id_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'id_type': forms.Select(attrs={'class': 'form-select', 'id': 'id_type'}),
+            'id_number': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_number'}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'id': 'date_of_birth'}),
             'gender': forms.Select(attrs={'class': 'form-select'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
@@ -26,6 +70,37 @@ class PatientForm(forms.ModelForm):
             'panel': forms.Select(attrs={'class': 'form-select'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        id_type = cleaned_data.get('id_type')
+        id_number = cleaned_data.get('id_number')
+        dob = cleaned_data.get('date_of_birth')
+        
+        if id_type == 'nric' and id_number:
+            try:
+                nric_digits = validate_nric(id_number)
+                cleaned_data['id_number'] = f"{nric_digits[:6]}-{nric_digits[6:8]}-{nric_digits[8:]}"
+                nric_dob = extract_dob_from_nric(nric_digits)
+                if not dob:
+                    cleaned_data['date_of_birth'] = nric_dob
+                elif dob != nric_dob:
+                    self.add_error('date_of_birth', 
+                        f'Date of birth ({dob.strftime("%Y-%m-%d")}) does not match NRIC ({nric_dob.strftime("%Y-%m-%d")}). '
+                        'Please correct the NRIC or update the date of birth.')
+            except ValidationError as e:
+                self.add_error('id_number', e)
+        
+        elif id_type == 'passport' and id_number:
+            if len(id_number) > 20:
+                self.add_error('id_number', 'Passport number must be 20 characters or less.')
+            if not re.match(r'^[A-Za-z0-9\-/]+$', id_number):
+                self.add_error('id_number', 'Passport number can only contain letters, numbers, hyphens, and slashes.')
+        
+        if dob and dob > date.today():
+            self.add_error('date_of_birth', 'Date of birth cannot be in the future.')
+        
+        return cleaned_data
 
 
 class VisitForm(forms.ModelForm):
