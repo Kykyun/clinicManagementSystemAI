@@ -44,9 +44,11 @@ class AIService:
         """Remove markdown code blocks from JSON responses."""
         import re
         text = text.strip()
-        text = re.sub(r'^```json\s*', '', text)
-        text = re.sub(r'^```\s*', '', text)
-        text = re.sub(r'\s*```$', '', text)
+        text = re.sub(r'^```json\s*\n?', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'^```\s*\n?', '', text)
+        text = re.sub(r'\n?\s*```$', '', text)
+        if text.startswith('json\n') or text.startswith('json\r'):
+            text = text[5:]
         return text.strip()
     
     def _log_request(self, user, action: str, input_text: str, output_text: str = "", 
