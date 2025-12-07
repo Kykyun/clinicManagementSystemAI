@@ -126,3 +126,78 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const idTypeField = document.getElementById('id_id_type');
+    const idNumberField = document.getElementById('id_id_number');
+    const dobField = document.getElementById('id_date_of_birth');
+    
+    function parseNRICDate(nric) {
+        // Malaysian NRIC format: YYMMDD-XX-XXXX or YYMMDDXXXXXX
+        // First 6 digits are birth date
+        const cleaned = nric.replace(/[-\s]/g, '');
+        if (cleaned.length < 6) return null;
+        
+        const yy = cleaned.substring(0, 2);
+        const mm = cleaned.substring(2, 4);
+        const dd = cleaned.substring(4, 6);
+        
+        // Validate month and day
+        const month = parseInt(mm, 10);
+        const day = parseInt(dd, 10);
+        if (month < 1 || month > 12) return null;
+        if (day < 1 || day > 31) return null;
+        
+        // Determine century: 00-30 = 2000s, 31-99 = 1900s
+        const year = parseInt(yy, 10);
+        const fullYear = year <= 30 ? 2000 + year : 1900 + year;
+        
+        // Format as YYYY-MM-DD for date input
+        return `${fullYear}-${mm}-${dd}`;
+    }
+    
+    function autoFillDOB() {
+        // Only auto-fill if ID type is NRIC (or not set)
+        const idType = idTypeField ? idTypeField.value : '';
+        if (idType && idType.toLowerCase() !== 'nric' && idType.toLowerCase() !== 'mykad') {
+            return;
+        }
+        
+        const nric = idNumberField.value;
+        if (nric.length >= 6) {
+            const dob = parseNRICDate(nric);
+            if (dob) {
+                dobField.value = dob;
+            }
+        }
+    }
+    
+    if (idNumberField && dobField) {
+        idNumberField.addEventListener('input', autoFillDOB);
+        idNumberField.addEventListener('blur', autoFillDOB);
+        
+        // Auto-format NRIC as user types (XXXXXX-XX-XXXX)
+        idNumberField.addEventListener('input', function(e) {
+            const idType = idTypeField ? idTypeField.value : '';
+            if (idType && idType.toLowerCase() !== 'nric' && idType.toLowerCase() !== 'mykad') {
+                return;
+            }
+            
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length > 12) value = value.substring(0, 12);
+            
+            // Format: XXXXXX-XX-XXXX
+            if (value.length > 8) {
+                value = value.substring(0, 6) + '-' + value.substring(6, 8) + '-' + value.substring(8);
+            } else if (value.length > 6) {
+                value = value.substring(0, 6) + '-' + value.substring(6);
+            }
+            
+            e.target.value = value;
+        });
+    }
+});
+</script>
+{% endblock %}
