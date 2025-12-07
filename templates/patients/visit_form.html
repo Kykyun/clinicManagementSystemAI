@@ -8,25 +8,48 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
+                {% if form.errors %}
+                <div class="alert alert-danger mb-3">
+                    <strong>Please fix the following errors:</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                            <li>{% if field != '__all__' %}{{ field|title }}: {% endif %}{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label class="form-label">Patient *</label>
                         {{ form.patient }}
+                        {% if form.patient.errors %}<div class="text-danger small">{{ form.patient.errors.0 }}</div>{% endif %}
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Doctor</label>
                             {{ form.doctor }}
+                            {% if form.doctor.errors %}<div class="text-danger small">{{ form.doctor.errors.0 }}</div>{% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Visit Type *</label>
                             {{ form.visit_type }}
+                            {% if form.visit_type.errors %}<div class="text-danger small">{{ form.visit_type.errors.0 }}</div>{% endif %}
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Visit Date & Time *</label>
-                        {{ form.visit_date }}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Visit Date & Time *</label>
+                            {{ form.visit_date }}
+                            {% if form.visit_date.errors %}<div class="text-danger small">{{ form.visit_date.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payer Type</label>
+                            {{ form.payer_type }}
+                            {% if form.payer_type.errors %}<div class="text-danger small">{{ form.payer_type.errors.0 }}</div>{% endif %}
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Reason / Chief Complaint</label>

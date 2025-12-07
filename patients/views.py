@@ -111,6 +111,7 @@ def visit_create(request, patient_id=None):
     
     if request.method == 'POST':
         form = VisitForm(request.POST)
+        form.fields['doctor'].queryset = User.objects.filter(role='doctor', is_active=True)
         if form.is_valid():
             visit = form.save(commit=False)
             visit.visit_number = generate_visit_number()
