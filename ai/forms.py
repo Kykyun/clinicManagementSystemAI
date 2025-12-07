@@ -13,10 +13,10 @@ class AIConfigForm(forms.ModelForm):
         ]
         widgets = {
             'model_name': forms.Select(choices=[
-                ('gpt-4o-mini', 'GPT-4o Mini (Cost Effective)'),
-                ('gpt-4o', 'GPT-4o (Best Quality)'),
-                ('gpt-4-turbo', 'GPT-4 Turbo'),
-                ('gpt-3.5-turbo', 'GPT-3.5 Turbo (Fastest)'),
+                ('gemini-2.5-flash', 'Gemini 2.5 Flash (Fast & Cost Effective)'),
+                ('gemini-2.5-pro', 'Gemini 2.5 Pro (Best Quality)'),
+                ('gemini-2.0-flash', 'Gemini 2.0 Flash'),
+                ('gemini-1.5-flash', 'Gemini 1.5 Flash'),
             ], attrs={'class': 'form-select'}),
             'max_tokens': forms.NumberInput(attrs={'class': 'form-control', 'min': 100, 'max': 4000}),
             'temperature': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 1, 'step': 0.1}),
