@@ -71,7 +71,27 @@ The system is organized into six main Django apps:
 - **Bootstrap 5.3.2** for responsive UI components
 - **Bootstrap Icons** for iconography
 - **DataTables** for enhanced table functionality
+- **Inter font** from Google Fonts for modern typography
 - Minimal JavaScript for interactivity (form handling, calendar events)
+
+### UI/UX Design (December 2025 Update)
+Modern, minimalist design with the following color palette:
+- **Primary**: #2A7DE1 (Clinical Blue)
+- **Secondary**: #0C4A6E (Deep Blue)
+- **Accent/Success**: #22C55E (Green)
+- **Danger**: #EF4444
+- **Warning**: #F59E0B
+- **Background**: #F7F9FC
+- **Surface**: #FFFFFF
+- **Text Primary**: #1E293B
+- **Text Secondary**: #64748B
+
+Key UI features:
+- Collapsible sidebar navigation with localStorage persistence
+- Smooth micro-animations and transitions
+- Rounded components (8-12px radius)
+- Soft shadows and subtle gradients
+- Clear visual hierarchy with modern card layouts
 
 **Design Decision**: Server-side rendering simplifies deployment and reduces client-side complexity. Bootstrap provides professional, mobile-responsive UI with minimal custom CSS.
 
