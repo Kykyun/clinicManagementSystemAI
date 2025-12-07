@@ -629,11 +629,11 @@ Important:
 Only respond with valid JSON."""
 
     messages = [
-        {"role": "system", "content": "You are a clinical pharmacology assistant. Suggest appropriate prescriptions based on the diagnosis. Match medicines to the clinic's available inventory when possible. Use standard medical dosing conventions and consider patient factors like age, allergies, and vital signs."},
+        {"role": "system", "content": "You are a clinical pharmacology assistant. Suggest appropriate prescriptions based on the diagnosis. Match medicines to the clinic's available inventory when possible. Use standard medical dosing conventions and consider patient factors like age, allergies, and vital signs. Keep your response concise - suggest only 2-3 essential medications."},
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_gemini(messages, user, "prescription_suggestions")
+    success, response, meta = service._call_gemini(messages, user, "prescription_suggestions", max_tokens=2000)
     
     if not success:
         return {"success": False, "error": response}
