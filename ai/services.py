@@ -40,6 +40,15 @@ class AIService:
             return text
         return text[:max_length] + "..."
     
+    def _clean_json_response(self, text: str) -> str:
+        """Remove markdown code blocks from JSON responses."""
+        import re
+        text = text.strip()
+        text = re.sub(r'^```json\s*', '', text)
+        text = re.sub(r'^```\s*', '', text)
+        text = re.sub(r'\s*```$', '', text)
+        return text.strip()
+    
     def _log_request(self, user, action: str, input_text: str, output_text: str = "", 
                      status: str = "success", tokens: int = 0, response_time: int = 0, 
                      error: str = ""):
@@ -170,7 +179,7 @@ Only respond with valid JSON, no additional text."""
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         result["disclaimer"] = AI_DISCLAIMER
         return result
@@ -212,7 +221,7 @@ Only respond with valid JSON. The ICD-10 codes are suggestions only."""
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         result["disclaimer"] = AI_DISCLAIMER
         return result
@@ -260,7 +269,7 @@ Only respond with valid JSON."""
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         result["disclaimer"] = AI_DISCLAIMER
         return result
@@ -309,7 +318,7 @@ Only respond with valid JSON."""
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         result["disclaimer"] = AI_DISCLAIMER
         return result
@@ -359,7 +368,7 @@ Only respond with valid JSON. Focus on items below minimum level first."""
         return {"success": False, "error": response}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         return result
     except json.JSONDecodeError:
@@ -408,7 +417,7 @@ Provide 3-5 most relevant insights. Only respond with valid JSON."""
         return {"success": False, "error": response}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         return result
     except json.JSONDecodeError:
@@ -486,7 +495,7 @@ Only respond with valid JSON."""
         return {"success": False, "error": response}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         return result
     except json.JSONDecodeError:
@@ -533,7 +542,7 @@ Only flag genuinely unusual patterns. Respond with valid JSON only."""
         return {"success": False, "error": response}
     
     try:
-        result = json.loads(response)
+        result = json.loads(service._clean_json_response(response))
         result["success"] = True
         return result
     except json.JSONDecodeError:
