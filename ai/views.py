@@ -253,7 +253,7 @@ def api_stock_suggestions(request):
             stock_data.append({
                 'name': med.name,
                 'current': med.stock_quantity,
-                'min_level': med.min_stock_level,
+                'min_level': med.minimum_stock,
             })
         
         low_stock = [item for item in stock_data if item['current'] <= item['min_level']]
@@ -295,7 +295,7 @@ def api_dashboard_insights(request):
         ).exclude(diagnosis='').values_list('diagnosis', flat=True)[:5])
         
         low_stock_count = Medicine.objects.filter(
-            stock_quantity__lte=F('min_stock_level')
+            stock_quantity__lte=F('minimum_stock')
         ).count()
         
         from patients.models import Appointment
