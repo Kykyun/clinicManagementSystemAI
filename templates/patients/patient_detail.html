@@ -4,53 +4,87 @@
 {% block page_title %}Patient Details{% endblock %}
 
 {% block content %}
+<div class="page-header">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'patients:patient_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4><i class="bi bi-person"></i> {{ patient.full_name }}</h4>
+            <code class="patient-id-badge">{{ patient.patient_id }}</code>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'patients:visit_create_for_patient' patient.pk %}" class="btn btn-primary">
+            <i class="bi bi-clipboard-plus"></i> New Visit
+        </a>
+        <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
 <div class="row g-4">
     <div class="col-lg-4">
-        <div class="card">
+        <div class="card patient-info-card">
             <div class="card-header">
-                <i class="bi bi-person"></i> Patient Information
+                <i class="bi bi-person-badge"></i> Personal Information
             </div>
             <div class="card-body">
-                <h5>{{ patient.full_name }}</h5>
-                <p class="text-muted mb-3"><code>{{ patient.patient_id }}</code></p>
-                
-                <table class="table table-sm">
-                    <tr>
-                        <td><strong>Age:</strong></td>
-                        <td>{{ patient.age }} years</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Gender:</strong></td>
-                        <td>{{ patient.get_gender_display }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>DOB:</strong></td>
-                        <td>{{ patient.date_of_birth }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Phone:</strong></td>
-                        <td>{{ patient.phone }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Email:</strong></td>
-                        <td>{{ patient.email|default:"-" }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Blood Type:</strong></td>
-                        <td>{{ patient.blood_type|default:"-" }}</td>
-                    </tr>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <i class="bi bi-calendar3"></i>
+                        <div>
+                            <span class="info-label">Age / DOB</span>
+                            <span class="info-value">{{ patient.age }} years ({{ patient.date_of_birth|date:"M d, Y" }})</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-gender-ambiguous"></i>
+                        <div>
+                            <span class="info-label">Gender</span>
+                            <span class="info-value">{{ patient.get_gender_display }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-telephone"></i>
+                        <div>
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ patient.phone }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ patient.email|default:"-" }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-droplet"></i>
+                        <div>
+                            <span class="info-label">Blood Type</span>
+                            <span class="info-value blood-type">{{ patient.blood_type|default:"-" }}</span>
+                        </div>
+                    </div>
                     {% if patient.panel %}
-                    <tr>
-                        <td><strong>Panel:</strong></td>
-                        <td>{{ patient.panel.company_name }}</td>
-                    </tr>
+                    <div class="info-item">
+                        <i class="bi bi-building"></i>
+                        <div>
+                            <span class="info-label">Panel</span>
+                            <span class="info-value panel-badge">{{ patient.panel.company_name }}</span>
+                        </div>
+                    </div>
                     {% endif %}
-                </table>
+                </div>
                 
                 {% if patient.allergies.exists %}
-                <div class="mb-3">
-                    <strong>Allergies:</strong>
-                    <div class="mt-1">
+                <div class="allergy-alert">
+                    <div class="alert-header">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Known Allergies</strong>
+                    </div>
+                    <div class="allergy-list">
                         {% for allergy in patient.allergies.all %}
                         <span class="badge bg-danger">{{ allergy.name }}</span>
                         {% endfor %}
@@ -59,24 +93,19 @@
                 {% endif %}
                 
                 {% if patient.chronic_illnesses %}
-                <div class="mb-3">
-                    <strong>Chronic Illnesses:</strong>
-                    <p class="text-muted mb-0">{{ patient.chronic_illnesses }}</p>
+                <div class="chronic-section">
+                    <span class="section-label">Chronic Illnesses</span>
+                    <p class="chronic-text">{{ patient.chronic_illnesses }}</p>
                 </div>
                 {% endif %}
-                
-                <div class="d-grid gap-2">
-                    <a href="{% url 'patients:visit_create_for_patient' patient.pk %}" class="btn btn-primary">
-                        <i class="bi bi-clipboard-plus"></i> New Visit
+            </div>
+            <div class="card-footer">
+                <div class="action-buttons">
+                    <a href="{% url 'patients:patient_history' patient.pk %}" class="btn btn-outline-info btn-sm w-100">
+                        <i class="bi bi-clock-history"></i> View Full History
                     </a>
-                    <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-pencil"></i> Edit Patient
-                    </a>
-                    <a href="{% url 'patients:patient_history' patient.pk %}" class="btn btn-outline-info">
-                        <i class="bi bi-clock-history"></i> View History
-                    </a>
-                    <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#referralModal">
-                        <i class="bi bi-envelope-paper"></i> Generate Referral Letter
+                    <button type="button" class="btn btn-outline-warning btn-sm w-100" data-bs-toggle="modal" data-bs-target="#referralModal">
+                        <i class="bi bi-envelope-paper"></i> Generate Referral
                     </button>
                 </div>
             </div>
@@ -86,7 +115,10 @@
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-header">
-                <i class="bi bi-clipboard2-pulse"></i> Recent Visits
+                <span><i class="bi bi-clipboard2-pulse"></i> Recent Visits</span>
+                <a href="{% url 'patients:visit_create_for_patient' patient.pk %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg"></i> New
+                </a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
@@ -103,26 +135,27 @@
                         {% for visit in visits %}
                         <tr>
                             <td>{{ visit.visit_date|date:"M d, Y H:i" }}</td>
-                            <td>{{ visit.get_visit_type_display }}</td>
+                            <td>
+                                <span class="type-badge {{ visit.visit_type|lower }}">{{ visit.get_visit_type_display }}</span>
+                            </td>
                             <td>{{ visit.doctor.get_full_name|default:"-" }}</td>
                             <td>
-                                {% if visit.status == 'waiting' %}
-                                <span class="badge bg-warning">Waiting</span>
-                                {% elif visit.status == 'in_progress' %}
-                                <span class="badge bg-info">In Progress</span>
-                                {% elif visit.status == 'completed' %}
-                                <span class="badge bg-success">Completed</span>
-                                {% endif %}
+                                <span class="status-badge {{ visit.status }}">{{ visit.get_status_display }}</span>
                             </td>
                             <td>
-                                <a href="{% url 'patients:visit_detail' visit.pk %}" class="btn btn-outline-primary btn-action">
+                                <a href="{% url 'patients:visit_detail' visit.pk %}" class="action-btn view" title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No visits recorded.</td>
+                            <td colspan="5">
+                                <div class="empty-state-mini">
+                                    <i class="bi bi-clipboard2"></i>
+                                    <span>No visits recorded yet.</span>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -132,7 +165,10 @@
         
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-calendar-check"></i> Upcoming Appointments
+                <span><i class="bi bi-calendar-check"></i> Upcoming Appointments</span>
+                <a href="{% url 'patients:appointment_create' %}?patient={{ patient.pk }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-lg"></i> Schedule
+                </a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover mb-0">
@@ -148,15 +184,20 @@
                     <tbody>
                         {% for apt in appointments %}
                         <tr>
-                            <td>{{ apt.appointment_date }}</td>
-                            <td>{{ apt.appointment_time }}</td>
+                            <td>{{ apt.appointment_date|date:"M d, Y" }}</td>
+                            <td>{{ apt.appointment_time|time:"H:i" }}</td>
                             <td>{{ apt.doctor.get_full_name|default:"-" }}</td>
                             <td>{{ apt.reason|truncatewords:5 }}</td>
                             <td><span class="badge bg-primary">{{ apt.get_status_display }}</span></td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No upcoming appointments.</td>
+                            <td colspan="5">
+                                <div class="empty-state-mini">
+                                    <i class="bi bi-calendar"></i>
+                                    <span>No upcoming appointments.</span>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -242,6 +283,175 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--space-lg);
+        flex-wrap: wrap;
+        gap: var(--space-md);
+    }
+    .page-header h4 {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+    }
+    .page-header h4 i {
+        color: var(--primary);
+    }
+    .patient-id-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 4px 12px;
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+    }
+    .patient-info-card .card-body {
+        padding: var(--space-lg);
+    }
+    .info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+    .info-item > i {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: var(--radius-sm);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .info-item .info-label {
+        display: block;
+        font-size: var(--font-size-xs);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 2px;
+    }
+    .info-item .info-value {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    .blood-type {
+        display: inline-block;
+        background: var(--danger-light);
+        color: var(--danger);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+    }
+    .panel-badge {
+        display: inline-block;
+        background: var(--info-light);
+        color: var(--info);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+    }
+    .allergy-alert {
+        margin-top: var(--space-lg);
+        padding: var(--space-md);
+        background: var(--danger-light);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--danger);
+    }
+    .allergy-alert .alert-header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        color: var(--danger);
+        margin-bottom: var(--space-sm);
+    }
+    .allergy-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+    }
+    .chronic-section {
+        margin-top: var(--space-lg);
+        padding-top: var(--space-md);
+        border-top: 1px solid var(--border-light);
+    }
+    .section-label {
+        display: block;
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: var(--space-sm);
+    }
+    .chronic-text {
+        color: var(--text-primary);
+        margin: 0;
+        line-height: 1.6;
+    }
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    .type-badge {
+        display: inline-flex;
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-size: var(--font-size-xs);
+        font-weight: 500;
+    }
+    .type-badge.medical {
+        background: var(--info-light);
+        color: var(--info);
+    }
+    .type-badge.otc {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-secondary);
+        transition: all var(--transition-fast);
+    }
+    .action-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-light);
+    }
+    .empty-state-mini {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-sm);
+        padding: var(--space-lg);
+        color: var(--text-muted);
+    }
+    .empty-state-mini i {
+        font-size: 1.25rem;
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}

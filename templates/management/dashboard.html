@@ -8,82 +8,81 @@
 <style>
     .stat-card-modern {
         border: none;
-        border-radius: 12px;
-        background: #fff;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        transition: all 0.3s ease;
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
         overflow: hidden;
-        position: relative;
     }
     .stat-card-modern:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-lg);
     }
     .stat-card-modern .card-body {
-        padding: 24px;
+        padding: var(--space-lg);
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: var(--space-md);
     }
     .stat-icon {
         width: 56px;
         height: 56px;
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
     }
-    .stat-icon.primary { background: rgba(42, 125, 225, 0.12); color: #2A7DE1; }
-    .stat-icon.success { background: rgba(34, 197, 94, 0.12); color: #22C55E; }
-    .stat-icon.warning { background: rgba(245, 158, 11, 0.12); color: #F59E0B; }
-    .stat-icon.info { background: rgba(14, 165, 233, 0.12); color: #0EA5E9; }
-    .stat-icon.danger { background: rgba(239, 68, 68, 0.12); color: #EF4444; }
+    .stat-icon.primary { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.success { background: var(--success-light); color: var(--success); }
+    .stat-icon.warning { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.info { background: var(--info-light); color: var(--info); }
+    .stat-icon.danger { background: var(--danger-light); color: var(--danger); }
     .stat-icon.purple { background: rgba(139, 92, 246, 0.12); color: #8B5CF6; }
     .stat-content .stat-value {
         font-size: 1.75rem;
         font-weight: 700;
-        color: #1E293B;
+        color: var(--text-primary);
         line-height: 1.2;
     }
     .stat-content .stat-label {
-        color: #64748B;
-        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-size: var(--font-size-sm);
         font-weight: 500;
         margin-top: 2px;
     }
     .section-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
         overflow: hidden;
     }
     .section-card .card-header {
-        background: #fff;
-        border-bottom: 1px solid #E2E8F0;
-        padding: 16px 20px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: var(--space-md) var(--space-lg);
         font-weight: 600;
-        color: #1E293B;
+        color: var(--text-primary);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: var(--space-sm);
     }
     .section-card .card-header i {
-        color: #2A7DE1;
+        color: var(--primary);
     }
     .ai-insight-card {
         background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
         border: 1px solid rgba(42, 125, 225, 0.15);
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 12px;
+        border-radius: var(--radius-md);
+        padding: var(--space-md) var(--space-lg);
+        margin-bottom: var(--space-md);
         display: flex;
         align-items: flex-start;
-        gap: 14px;
-        transition: all 0.2s ease;
+        gap: var(--space-md);
+        transition: all var(--transition-fast);
     }
     .ai-insight-card:hover {
-        box-shadow: 0 4px 12px rgba(42, 125, 225, 0.15);
+        box-shadow: var(--shadow-md);
         transform: translateY(-2px);
     }
     .ai-insight-card.trend {
@@ -97,7 +96,7 @@
     .ai-insight-icon {
         width: 40px;
         height: 40px;
-        border-radius: 10px;
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -105,34 +104,34 @@
         flex-shrink: 0;
     }
     .ai-insight-card .ai-insight-icon {
-        background: rgba(42, 125, 225, 0.15);
-        color: #2A7DE1;
+        background: var(--primary-light);
+        color: var(--primary);
     }
     .ai-insight-card.trend .ai-insight-icon {
-        background: rgba(34, 197, 94, 0.15);
-        color: #22C55E;
+        background: var(--success-light);
+        color: var(--success);
     }
     .ai-insight-card.alert .ai-insight-icon {
-        background: rgba(245, 158, 11, 0.15);
-        color: #F59E0B;
+        background: var(--warning-light);
+        color: var(--warning);
     }
     .ai-insight-content h6 {
-        font-size: 0.9rem;
+        font-size: var(--font-size-sm);
         font-weight: 600;
-        color: #1E293B;
-        margin-bottom: 4px;
+        color: var(--text-primary);
+        margin-bottom: var(--space-xs);
     }
     .ai-insight-content p {
-        font-size: 0.85rem;
-        color: #64748B;
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
         margin: 0;
         line-height: 1.5;
     }
     .queue-item {
         display: flex;
         align-items: center;
-        padding: 12px 16px;
-        border-bottom: 1px solid #F1F5F9;
+        padding: var(--space-md);
+        border-bottom: 1px solid var(--border-light);
     }
     .queue-item:last-child {
         border-bottom: none;
@@ -140,62 +139,62 @@
     .queue-number {
         width: 40px;
         height: 40px;
-        border-radius: 10px;
-        background: #F1F5F9;
+        border-radius: var(--radius-md);
+        background: var(--border-light);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        color: #2A7DE1;
-        margin-right: 14px;
+        color: var(--primary);
+        margin-right: var(--space-md);
     }
     .queue-info {
         flex: 1;
     }
     .queue-info .name {
         font-weight: 500;
-        color: #1E293B;
+        color: var(--text-primary);
     }
     .queue-info .details {
-        font-size: 0.8rem;
-        color: #64748B;
+        font-size: var(--font-size-xs);
+        color: var(--text-secondary);
     }
     .queue-status {
         padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.75rem;
+        border-radius: var(--radius-full);
+        font-size: var(--font-size-xs);
         font-weight: 500;
     }
     .queue-status.waiting {
-        background: rgba(245, 158, 11, 0.12);
+        background: var(--warning-light);
         color: #D97706;
     }
     .queue-status.in-progress {
-        background: rgba(14, 165, 233, 0.12);
+        background: var(--info-light);
         color: #0284C7;
     }
     .chart-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        padding: 20px;
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: var(--space-lg);
     }
     .chart-title {
         font-weight: 600;
-        color: #1E293B;
-        margin-bottom: 16px;
+        color: var(--text-primary);
+        margin-bottom: var(--space-md);
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--space-sm);
     }
     .chart-title i {
-        color: #2A7DE1;
+        color: var(--primary);
     }
     .appointment-item {
         display: flex;
         align-items: center;
-        padding: 14px 16px;
-        border-bottom: 1px solid #F1F5F9;
+        padding: var(--space-md);
+        border-bottom: 1px solid var(--border-light);
     }
     .appointment-item:last-child {
         border-bottom: none;
@@ -203,62 +202,64 @@
     .appointment-time {
         width: 60px;
         text-align: center;
-        margin-right: 14px;
+        margin-right: var(--space-md);
     }
     .appointment-time .time {
         font-weight: 600;
-        color: #1E293B;
-        font-size: 0.9rem;
+        color: var(--text-primary);
+        font-size: var(--font-size-sm);
     }
     .appointment-time .date {
-        font-size: 0.75rem;
-        color: #64748B;
+        font-size: var(--font-size-xs);
+        color: var(--text-secondary);
     }
     .appointment-info {
         flex: 1;
     }
     .appointment-info .name {
         font-weight: 500;
-        color: #1E293B;
+        color: var(--text-primary);
     }
     .appointment-info .doctor {
-        font-size: 0.8rem;
-        color: #64748B;
-    }
-    .doctor-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        background: rgba(42, 125, 225, 0.12);
-        color: #2A7DE1;
+        font-size: var(--font-size-xs);
+        color: var(--text-secondary);
     }
     .quick-action-btn {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 20px;
-        border-radius: 12px;
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        color: #64748B;
+        padding: var(--space-lg);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
         text-decoration: none;
-        transition: all 0.2s ease;
+        transition: all var(--transition-fast);
     }
     .quick-action-btn:hover {
-        border-color: #2A7DE1;
-        color: #2A7DE1;
-        background: rgba(42, 125, 225, 0.04);
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-light);
         transform: translateY(-2px);
     }
     .quick-action-btn i {
         font-size: 1.5rem;
-        margin-bottom: 8px;
+        margin-bottom: var(--space-sm);
     }
     .quick-action-btn span {
-        font-size: 0.85rem;
+        font-size: var(--font-size-sm);
         font-weight: 500;
+    }
+    .empty-state-dash {
+        text-align: center;
+        padding: var(--space-lg);
+        color: var(--text-muted);
+    }
+    .empty-state-dash i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: var(--space-sm);
     }
 </style>
 {% endblock %}
@@ -300,7 +301,7 @@
             </div>
             <div class="col-6 col-md-3 col-lg-2">
                 <a href="{% url 'setup_app:medicine_list' %}" class="quick-action-btn">
-                    <i class="bi bi-capsule text-purple"></i>
+                    <i class="bi bi-capsule" style="color: #8B5CF6;"></i>
                     <span>Medicines</span>
                 </a>
             </div>
@@ -441,9 +442,9 @@
                     {% endif %}
                 </div>
                 {% empty %}
-                <div class="text-center text-muted py-4">
-                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                    <p class="mb-0 mt-2">No patients in queue</p>
+                <div class="empty-state-dash">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">No patients in queue</p>
                 </div>
                 {% endfor %}
             </div>
@@ -470,9 +471,9 @@
                     </div>
                 </div>
                 {% empty %}
-                <div class="text-center text-muted py-4">
-                    <i class="bi bi-calendar" style="font-size: 2rem;"></i>
-                    <p class="mb-0 mt-2">No upcoming appointments</p>
+                <div class="empty-state-dash">
+                    <i class="bi bi-calendar"></i>
+                    <p class="mb-0">No upcoming appointments</p>
                 </div>
                 {% endfor %}
             </div>
@@ -493,19 +494,21 @@
                         <tr>
                             <td>
                                 <a href="{% url 'patients:patient_detail' patient.pk %}" class="text-decoration-none">
-                                    <div class="fw-medium text-dark">{{ patient.full_name }}</div>
-                                    <small class="text-muted">{{ patient.patient_id }}</small>
+                                    <div class="fw-medium" style="color: var(--text-primary);">{{ patient.full_name }}</div>
+                                    <small style="color: var(--text-muted);">{{ patient.patient_id }}</small>
                                 </a>
                             </td>
                             <td class="text-end">
-                                <small class="text-muted">{{ patient.phone }}</small>
+                                <small style="color: var(--text-muted);">{{ patient.phone }}</small>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="2" class="text-center text-muted py-4">
-                                <i class="bi bi-people" style="font-size: 2rem;"></i>
-                                <p class="mb-0 mt-2">No patients registered</p>
+                            <td colspan="2">
+                                <div class="empty-state-dash">
+                                    <i class="bi bi-people"></i>
+                                    <p class="mb-0">No patients registered</p>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -533,6 +536,9 @@ fetch('{% url "management_app:dashboard_data" %}')
     .then(response => response.json())
     .then(data => {
         const ctx = document.getElementById('weeklyChart').getContext('2d');
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#2A7DE1';
+        const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success').trim() || '#22C55E';
+        
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -540,23 +546,23 @@ fetch('{% url "management_app:dashboard_data" %}')
                 datasets: [{
                     label: 'Visits',
                     data: data.visits,
-                    borderColor: '#2A7DE1',
+                    borderColor: primaryColor,
                     backgroundColor: 'rgba(42, 125, 225, 0.1)',
                     fill: true,
                     tension: 0.4,
                     borderWidth: 2,
-                    pointBackgroundColor: '#2A7DE1',
+                    pointBackgroundColor: primaryColor,
                     pointRadius: 4,
                     pointHoverRadius: 6
                 }, {
                     label: 'Revenue (RM)',
                     data: data.revenue,
-                    borderColor: '#22C55E',
+                    borderColor: successColor,
                     backgroundColor: 'rgba(34, 197, 94, 0.1)',
                     fill: true,
                     tension: 0.4,
                     borderWidth: 2,
-                    pointBackgroundColor: '#22C55E',
+                    pointBackgroundColor: successColor,
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     yAxisID: 'y1'
