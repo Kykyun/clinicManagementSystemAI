@@ -112,15 +112,26 @@ class AIService:
             
             content = ""
             try:
-                if response.text:
+                # Try response.text first (new SDK format)
+                if hasattr(response, 'text') and response.text:
                     content = response.text
+                # Fallback to candidates extraction
                 elif hasattr(response, 'candidates') and response.candidates:
                     candidate = response.candidates[0]
                     if hasattr(candidate, 'content') and candidate.content:
                         if hasattr(candidate.content, 'parts') and candidate.content.parts:
-                            content = candidate.content.parts[0].text or ""
+                            part = candidate.content.parts[0]
+                            if hasattr(part, 'text'):
+                                content = part.text or ""
+                
+                if not content:
+                    # Log detailed response structure for debugging
+                    logger.warning(f"Empty content from response. Response type: {type(response)}")
+                    if hasattr(response, 'candidates'):
+                        logger.warning(f"Candidates: {response.candidates}")
             except Exception as text_err:
-                logger.warning(f"Could not extract text from response: {text_err}")
+                logger.error(f"Could not extract text from response: {text_err}")
+                logger.error(f"Response object: {response}")
                 content = ""
             
             tokens = 0
@@ -439,12 +450,18 @@ Provide 3-5 most relevant insights. Only respond with valid JSON."""
     if not success:
         return {"success": False, "error": response}
     
+    if not response or not response.strip():
+        return {"success": False, "error": "AI returned an empty response. Please try again."}
+    
     try:
-        result = json.loads(service._clean_json_response(response))
+        cleaned = service._clean_json_response(response)
+        result = json.loads(cleaned)
         result["success"] = True
         return result
-    except json.JSONDecodeError:
-        return {"success": False, "error": "Failed to parse AI response", "raw_response": response}
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse dashboard insights response: {e}")
+        logger.error(f"Raw response: {response[:500] if response else 'None'}")
+        return {"success": False, "error": f"Failed to parse AI response: {str(e)}", "raw_response": response[:300] if response else ""}
 
 
 def ai_chat_assistant(message: str, context: str = "", user=None) -> Dict[str, Any]:
