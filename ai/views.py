@@ -433,35 +433,39 @@ def api_prescription_suggestions(request, consultation_id):
         
         if result.get('success') and result.get('prescriptions'):
             for rx in result['prescriptions']:
-                if rx.get('is_new_medicine', False):
-                    existing = Medicine.objects.filter(name__iexact=rx.get('medicine_name', '')).first()
-                    if not existing:
-                        sku = f"AI-{uuid.uuid4().hex[:8].upper()}"
-                        new_med = Medicine.objects.create(
-                            name=rx.get('medicine_name', 'Unknown'),
-                            generic_name=rx.get('generic_name', ''),
-                            strength=rx.get('dosage', ''),
-                            form='tablet',
-                            sku=sku,
-                            selling_price=0,
-                            cost_price=0,
-                            stock_quantity=0,
-                            is_active=True,
-                        )
-                        rx['medicine_id'] = new_med.id
-                        rx['auto_added'] = True
-                    else:
-                        rx['medicine_id'] = existing.id
-                        rx['is_new_medicine'] = False
+                medicine_name = rx.get('medicine_name', '').strip()
+                if not medicine_name:
+                    continue
+                    
+                med = Medicine.objects.filter(name__iexact=medicine_name).first()
+                if not med:
+                    med = Medicine.objects.filter(name__icontains=medicine_name).first()
+                
+                if med:
+                    rx['medicine_id'] = med.id
+                    rx['medicine_name'] = med.name
+                    rx['is_new_medicine'] = False
                 else:
-                    med = Medicine.objects.filter(name__iexact=rx.get('medicine_name', '')).first()
-                    if med:
-                        rx['medicine_id'] = med.id
-                    else:
-                        med = Medicine.objects.filter(name__icontains=rx.get('medicine_name', '')).first()
-                        if med:
-                            rx['medicine_id'] = med.id
-                            rx['medicine_name'] = med.name
+                    sku = f"AI-{uuid.uuid4().hex[:8].upper()}"
+                    form_type = rx.get('form', 'tablet').lower() if rx.get('form') else 'tablet'
+                    if form_type not in ['tablet', 'capsule', 'syrup', 'injection', 'cream', 'ointment', 'drops', 'inhaler', 'suppository', 'patch']:
+                        form_type = 'tablet'
+                    
+                    new_med = Medicine.objects.create(
+                        name=medicine_name,
+                        generic_name=rx.get('generic_name', ''),
+                        strength=rx.get('dosage', ''),
+                        form=form_type,
+                        sku=sku,
+                        selling_price=0,
+                        cost_price=0,
+                        stock_quantity=100,
+                        min_stock_level=10,
+                        is_active=True,
+                    )
+                    rx['medicine_id'] = new_med.id
+                    rx['is_new_medicine'] = True
+                    rx['auto_added'] = True
         
         return JsonResponse(result)
     except Exception as e:
