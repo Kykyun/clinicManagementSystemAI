@@ -188,34 +188,6 @@
         font-weight: 600;
         color: #1E293B;
     }
-    .proceed-payment-btn {
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        color: white;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .proceed-payment-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-        color: white;
-    }
-    .action-footer {
-        background: linear-gradient(135deg, #F7F9FC 0%, #EBF4FF 100%);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid #E2E8F0;
-    }
 </style>
 {% endblock %}
 
@@ -232,9 +204,6 @@
             </a>
             <a href="{% url 'patients:visit_detail' consultation.visit.pk %}" class="btn btn-outline-light btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Back to Visit
-            </a>
-            <a href="{% url 'finance:invoice_create_for_visit' consultation.visit.pk %}" class="proceed-payment-btn">
-                <i class="bi bi-credit-card"></i>Proceed to Payment
             </a>
         </div>
     </div>
@@ -450,16 +419,6 @@
     </div>
 </div>
 
-<div class="action-footer">
-    <div>
-        <h6 class="mb-1 fw-semibold">Ready to proceed?</h6>
-        <p class="mb-0 text-muted small">Consultation complete. Create an invoice for this visit.</p>
-    </div>
-    <a href="{% url 'finance:invoice_create_for_visit' consultation.visit.pk %}" class="proceed-payment-btn">
-        <i class="bi bi-credit-card"></i>Proceed to Payment
-        <i class="bi bi-arrow-right"></i>
-    </a>
-</div>
 
 <div class="modal fade" id="aiRxModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
