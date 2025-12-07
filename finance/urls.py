@@ -4,6 +4,10 @@ from . import views
 app_name = 'finance'
 
 urlpatterns = [
+    path('billing/', views.billing_dashboard, name='billing_dashboard'),
+    path('billing/quick-invoice/<int:visit_id>/', views.quick_invoice_create, name='quick_invoice_create'),
+    path('billing/complete/<int:visit_id>/', views.complete_billing, name='complete_billing'),
+    
     path('invoices/', views.invoice_list, name='invoice_list'),
     path('invoices/create/', views.invoice_create, name='invoice_create'),
     path('invoices/create/<int:visit_id>/', views.invoice_create, name='invoice_create_for_visit'),

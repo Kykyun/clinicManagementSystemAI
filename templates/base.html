@@ -33,6 +33,42 @@
             <span>Dashboard</span>
         </a>
         
+        <div class="nav-section">Workstations</div>
+        {% if user.role == 'admin' or user.role == 'receptionist' %}
+        <a href="{% url 'patients:reception_dashboard' %}" class="nav-link {% if 'reception' in request.resolver_match.url_name %}active{% endif %}" title="Reception">
+            <i class="bi bi-person-badge"></i>
+            <span>Reception</span>
+        </a>
+        {% endif %}
+        {% if user.role == 'admin' or user.role == 'nurse' %}
+        <a href="{% url 'patients:nurse_dashboard' %}" class="nav-link {% if 'nurse' in request.resolver_match.url_name %}active{% endif %}" title="Nurse Station">
+            <i class="bi bi-heart-pulse"></i>
+            <span>Nurse Station</span>
+        </a>
+        {% endif %}
+        {% if user.role == 'admin' or user.role == 'doctor' %}
+        <a href="{% url 'patients:doctor_dashboard' %}" class="nav-link {% if 'doctor' in request.resolver_match.url_name %}active{% endif %}" title="Doctor">
+            <i class="bi bi-clipboard2-pulse"></i>
+            <span>Doctor</span>
+        </a>
+        {% endif %}
+        {% if user.role == 'admin' or user.role == 'nurse' or user.role == 'doctor' or user.role == 'pharmacist' %}
+        <a href="{% url 'patients:pharmacy_dashboard' %}" class="nav-link {% if 'pharmacy' in request.resolver_match.url_name %}active{% endif %}" title="Pharmacy">
+            <i class="bi bi-capsule"></i>
+            <span>Pharmacy</span>
+        </a>
+        {% endif %}
+        {% if user.role == 'admin' or user.role == 'finance' or user.role == 'receptionist' %}
+        <a href="{% url 'finance:billing_dashboard' %}" class="nav-link {% if 'billing' in request.resolver_match.url_name %}active{% endif %}" title="Billing">
+            <i class="bi bi-cash-coin"></i>
+            <span>Billing</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'patients:queue_display' %}" class="nav-link {% if request.resolver_match.url_name == 'queue_display' and request.resolver_match.app_name == 'patients' %}active{% endif %}" title="Queue Display">
+            <i class="bi bi-display"></i>
+            <span>Queue Display</span>
+        </a>
+        
         <div class="nav-section">Patient</div>
         <a href="{% url 'patients:patient_list' %}" class="nav-link {% if 'patient' in request.resolver_match.url_name and request.resolver_match.app_name == 'patients' %}active{% endif %}" title="Patients">
             <i class="bi bi-people"></i>

@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 import uuid
 from .models import Invoice, InvoiceItem, Payment, Supplier, StockOrder, StockOrderItem, PanelClaim, EODReport
 from .forms import InvoiceForm, InvoiceItemForm, PaymentForm, SupplierForm, StockOrderForm, StockOrderItemForm, PanelClaimForm
-from patients.models import Visit
-from setup_app.models import Panel
+from patients.models import Visit, Consultation, Prescription
+from setup_app.models import Panel, Fee
 from accounts.decorators import finance_access_required, admin_or_hq_required
 from einvoice.models import EInvoiceDocument
 
@@ -315,3 +315,89 @@ def eod_generate(request):
 def credit_payment_list(request):
     invoices = Invoice.objects.filter(status__in=['pending', 'partial']).order_by('-invoice_date')
     return render(request, 'finance/credit_payment_list.html', {'invoices': invoices})
+
+
+@login_required
+@finance_access_required
+def billing_dashboard(request):
+    visits_ready = Visit.objects.filter(status='ready_for_payment').select_related('patient').order_by('visit_date')
+    today = timezone.now().date()
+    today_invoices = Invoice.objects.filter(invoice_date__date=today)
+    today_payments = Payment.objects.filter(payment_date__date=today)
+    
+    stats = {
+        'pending_count': visits_ready.count(),
+        'invoices_today': today_invoices.count(),
+        'revenue_today': today_payments.aggregate(total=Sum('amount'))['total'] or 0,
+        'pending_invoices': Invoice.objects.filter(status__in=['pending', 'partial']).count(),
+    }
+    
+    return render(request, 'finance/billing_dashboard.html', {
+        'visits': visits_ready,
+        'stats': stats,
+    })
+
+
+@login_required
+@finance_access_required
+def quick_invoice_create(request, visit_id):
+    visit = get_object_or_404(Visit, pk=visit_id)
+    
+    existing_invoice = Invoice.objects.filter(visit=visit).first()
+    if existing_invoice:
+        messages.info(request, 'Invoice already exists for this visit.')
+        return redirect('finance:invoice_detail', pk=existing_invoice.pk)
+    
+    invoice = Invoice.objects.create(
+        invoice_number=generate_invoice_number(),
+        patient=visit.patient,
+        visit=visit,
+        panel=visit.patient.panel if visit.patient.panel else None,
+        created_by=request.user,
+    )
+    
+    try:
+        consultation = visit.consultation
+        consultation_fee = Fee.objects.filter(name__icontains='consultation').first()
+        if consultation_fee:
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                item_type='consultation',
+                description=f'Consultation - {consultation_fee.name}',
+                quantity=1,
+                unit_price=consultation_fee.amount,
+                total=consultation_fee.amount,
+            )
+        
+        prescriptions = Prescription.objects.filter(consultation=consultation)
+        for rx in prescriptions:
+            if rx.medicine:
+                item_total = rx.medicine.selling_price * rx.quantity
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    item_type='medicine',
+                    description=f'{rx.medicine.name} x{rx.quantity}',
+                    quantity=rx.quantity,
+                    unit_price=rx.medicine.selling_price,
+                    total=item_total,
+                )
+    except Exception:
+        pass
+    
+    invoice.subtotal = sum(i.total for i in invoice.items.all())
+    invoice.total_amount = invoice.subtotal + invoice.tax_amount - invoice.discount
+    invoice.outstanding_balance = invoice.total_amount - invoice.amount_paid
+    invoice.save()
+    
+    messages.success(request, f'Invoice {invoice.invoice_number} created with items from visit.')
+    return redirect('finance:invoice_items', pk=invoice.pk)
+
+
+@login_required
+@finance_access_required
+def complete_billing(request, visit_id):
+    visit = get_object_or_404(Visit, pk=visit_id)
+    visit.status = 'completed'
+    visit.save()
+    messages.success(request, f'Visit for {visit.patient.full_name} marked as completed.')
+    return redirect('finance:billing_dashboard')
