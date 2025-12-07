@@ -153,7 +153,20 @@ def consultation_create(request, visit_id):
             messages.success(request, 'Consultation saved successfully.')
             return redirect('patients:consultation_detail', pk=consultation.pk)
     else:
-        form = ConsultationForm()
+        initial_data = {}
+        if hasattr(visit, 'triage') and visit.triage:
+            triage = visit.triage
+            if triage.bp_systolic and triage.bp_diastolic:
+                initial_data['vitals_bp'] = f"{triage.bp_systolic}/{triage.bp_diastolic}"
+            if triage.heart_rate:
+                initial_data['vitals_pulse'] = triage.heart_rate
+            if triage.temperature:
+                initial_data['vitals_temp'] = triage.temperature
+            if triage.weight:
+                initial_data['vitals_weight'] = triage.weight
+            if triage.height:
+                initial_data['vitals_height'] = triage.height
+        form = ConsultationForm(initial=initial_data)
     
     past_visits = Visit.objects.filter(
         patient=visit.patient,
