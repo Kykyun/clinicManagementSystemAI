@@ -605,50 +605,26 @@ def ai_suggest_prescriptions(consultation_data: Dict, available_medicines: list,
     else:
         medicines_list = "No medicines currently in the clinic inventory. You may suggest common medicines and set is_new_medicine to true for all."
     
-    prompt = f"""Based on this consultation, suggest appropriate prescriptions.
+    prompt = f"""Suggest 2-3 prescriptions for this consultation. BE VERY CONCISE.
 
-Patient Details:
-- Age: {consultation_data.get('patient_age', 'Unknown')}
-- Gender: {consultation_data.get('patient_gender', 'Unknown')}
-- Allergies: {consultation_data.get('allergies', 'None known')}
+Patient: {consultation_data.get('patient_age', 'Unknown')} y/o {consultation_data.get('patient_gender', 'Unknown')}, Allergies: {consultation_data.get('allergies', 'None')}
+Complaint: {consultation_data.get('chief_complaint', '')}
+Diagnosis: {consultation_data.get('diagnosis', '')}
 
-Consultation:
-- Chief Complaint: {consultation_data.get('chief_complaint', '')}
-- Diagnosis: {consultation_data.get('diagnosis', '')}
-- Treatment Plan: {consultation_data.get('treatment_plan', '')}
-- Vitals: BP {consultation_data.get('bp', '-')}, Pulse {consultation_data.get('pulse', '-')}
+Available Medicines (use these names exactly):
+{medicines_list[:2000]}
 
-Available Medicines in Clinic:
-{medicines_list}
+Return JSON only:
+{{"prescriptions":[{{"medicine_name":"exact name","dosage":"500mg","frequency":"BD","duration":"5 days","quantity":10,"instructions":"short instruction max 10 words","is_new_medicine":false}}],"clinical_notes":"one sentence","warnings":[]}}
 
-Respond in JSON format:
-{{
-    "prescriptions": [
-        {{
-            "medicine_name": "Medicine name (must match available medicines if possible)",
-            "generic_name": "Generic name",
-            "dosage": "e.g., 500mg, 10ml",
-            "frequency": "e.g., BD (twice daily), TDS (three times daily), OD (once daily)",
-            "duration": "e.g., 3 days, 5 days, 1 week",
-            "quantity": numeric quantity to dispense,
-            "instructions": "Any special instructions",
-            "is_new_medicine": true if medicine not in available list or false if it exists
-        }}
-    ],
-    "clinical_notes": "Brief explanation of prescription choices",
-    "warnings": ["Any drug interaction or allergy warnings"]
-}}
-
-Important:
-1. Match medicine names to the available medicines list when possible
-2. If a required medicine is not available, set is_new_medicine to true
-3. Use standard medical abbreviations: OD (once daily), BD (twice daily), TDS (three times daily), QID (four times daily), PRN (as needed)
-4. Consider patient allergies and contraindications
-
-Only respond with valid JSON."""
+Rules:
+- Match medicine names EXACTLY to available list
+- instructions: MAX 10 words
+- clinical_notes: MAX 20 words
+- Limit to 2-3 medicines only"""
 
     messages = [
-        {"role": "system", "content": "You are a clinical pharmacology assistant. Suggest appropriate prescriptions based on the diagnosis. Match medicines to the clinic's available inventory when possible. Use standard medical dosing conventions and consider patient factors like age, allergies, and vital signs. Keep your response concise - suggest only 2-3 essential medications."},
+        {"role": "system", "content": "You are a clinical pharmacology assistant. Return ONLY valid JSON. Be extremely concise - max 10 words per instruction field. Suggest 2-3 essential medications only."},
         {"role": "user", "content": prompt}
     ]
     
