@@ -1,0 +1,277 @@
+
+You are an expert full-stack engineer and UI/UX designer.
+Your task: **rebuild (revoke) the entire UI from scratch** for a **modern Clinic Management System** with a **clear end-to-end flow**, using **TypeScript everywhere** for maintainable, easy-to-debug code.
+
+### Tech & Code Requirements
+
+1. **Language & Stack**
+
+   * All code must be written in **TypeScript** (no plain JS).
+   * Use a modern frontend framework (e.g., **React + TypeScript**).
+   * If you include backend examples, also use **TypeScript** (e.g., Node + Express/NestJS).
+
+2. **Code Quality / Debuggability**
+
+   * Use **strong, explicit types** for:
+
+     * Components props
+     * API responses
+     * Core domain models (Patient, Visit, Invoice, User, etc.)
+   * Add **clear interfaces/types**:
+
+     * `Patient`, `Visit`, `User`, `Prescription`, `Invoice`, `InvoiceLine`, `Drug`, `StockBatch`, `QueueItem`, etc.
+   * Include **basic error handling** and type-safe API wrappers.
+   * Organize code into **modules/folders**:
+
+     * `modules/patients`, `modules/appointments`, `modules/visits`, `modules/pharmacy`, `modules/billing`, `modules/admin`, `modules/auth`.
+   * Use clear naming, comments for complex logic, and simple state management that’s easy to debug.
+
+3. **UI/Theme**
+
+   * Style: **clean, modern, colorful but not noisy**.
+   * Prefer a **light theme** with accent colors for:
+
+     * Primary actions
+     * Status badges (waiting, in progress, completed, etc.)
+   * Layout: responsive, dashboard-style:
+
+     * Left sidebar navigation
+     * Top bar with clinic name, user profile, quick actions
+   * Use consistent spacing, typography, and color tokens (e.g., `primary`, `success`, `warning`, `danger`).
+
+4. **Scope**
+
+   * Focus on **front-end UI + types + mock data** that demonstrates the flow.
+   * You can mock APIs / data with TypeScript types and simple fake services.
+
+---
+
+### Core Flow to Implement in the UI
+
+The system must support this **end-to-end clinic flow**:
+
+#### 1. Appointment & Pre-Visit (optional but supported)
+
+* **Online / Reception booking screen**
+
+  * Create / edit / cancel appointments.
+  * Input fields: name, phone, ID, DOB, reason for visit, preferred doctor, date & time.
+  * Display doctor schedules and available slots.
+* **Optional pre-visit form UI**
+
+  * Medical history, allergies, basic consent.
+
+#### 2. Arrival & Check-in (Reception Dashboard)
+
+* **Reception Dashboard**
+
+  * Big patient search (by name, phone, ID, DOB).
+  * Button to **register new patient**.
+  * Show today’s appointments and walk-ins.
+* When patient arrives:
+
+  * If new → open **New Patient Form**.
+  * If existing → open **Patient Quick View** (basic info + visit history).
+  * UI to:
+
+    * Select doctor / service.
+    * Select visit type (new, follow-up, emergency, vaccination, etc.).
+    * Select payer type (self-pay, corporate, insurance).
+  * On confirmation:
+
+    * Assign a **queue number**.
+    * Set status: `Waiting – Triage` or `Waiting – Doctor`, depending on clinic policy.
+  * Optional: **Queue Display View** showing:
+
+    * Queue number
+    * Patient initials
+    * Assigned doctor / room
+    * Status and estimated waiting time.
+
+#### 3. Triage / Nursing
+
+* **Nurse Dashboard**
+
+  * See list of patients with status `Waiting – Triage`.
+  * Action to **“Start Triage”** for a selected patient.
+* **Triage Form UI**
+
+  * Show patient details.
+  * Inputs:
+
+    * Vitals: BP, HR, temperature, weight, height, SPO₂, pain score.
+    * Triage notes.
+    * Flags: allergies, infection risk, fall risk.
+  * On save:
+
+    * Status: `Waiting – Doctor`.
+    * Vitals are linked to the current **Visit** record.
+
+#### 4. Doctor Consultation
+
+* **Doctor Dashboard**
+
+  * Filterable by doctor.
+  * Columns: queue number, patient name, reason, status (`Waiting`, `In Consultation`, etc.).
+  * Actions:
+
+    * Open visit
+    * Start consultation
+* **Visit / EMR Screen**
+
+  * Tabs or sections:
+
+    * Summary (quick info, vitals, past history).
+    * **SOAP Notes**:
+
+      * Subjective: chief complaint, HPI.
+      * Objective: exam findings, vitals.
+      * Assessment: diagnoses (with ICD code support as type, can be mocked).
+      * Plan: meds, tests, procedures, referrals.
+    * Orders:
+
+      * Medication orders (e-prescription).
+      * Lab / imaging orders.
+      * Procedures.
+    * Documents:
+
+      * MC (medical certificate) generation.
+      * Referral letters.
+  * On “Complete Consultation”:
+
+    * Doctor chooses next routing:
+
+      * `To Pharmacy`
+      * `To Lab`
+      * `To Billing / Checkout`
+    * Status updates accordingly.
+
+#### 5. Pharmacy / Dispensing
+
+* **Pharmacy Dashboard**
+
+  * Shows patients with `To Pharmacy` status and pending prescriptions.
+  * For each patient:
+
+    * List of medications with dose, frequency, duration, and notes.
+  * UI to:
+
+    * Confirm which items are dispensed.
+    * Adjust quantities if needed.
+    * Show remaining stock and low stock warnings.
+* **Inventory UI (simplified)**
+
+  * Drug list with:
+
+    * Name, code
+    * Current stock
+    * Minimum stock
+    * Batch and expiry (if included).
+* On “Dispense Complete”:
+
+  * Status: `Ready for Payment` or `Completed` (if prepaid or no billing needed).
+
+#### 6. Billing & Payment
+
+* **Billing / Cashier Dashboard**
+
+  * List of visits with `Ready for Payment` status.
+  * Clicking a visit opens **Invoice UI**:
+
+    * Auto-generated items:
+
+      * Consultation fee (based on doctor / visit type).
+      * Procedures.
+      * Lab tests.
+      * Medications.
+    * Support:
+
+      * Discounts.
+      * Additional charges.
+      * Tax.
+    * Payer Type handling:
+
+      * Self-pay: show full amount.
+      * Corporate / insurance:
+
+        * Show covered vs non-covered items (simplified mock logic).
+        * Show patient co-pay.
+  * Payment UI:
+
+    * Select payment method: cash, card, e-wallet, online.
+    * Confirm payment → mark invoice as paid.
+    * Option to print/export receipt.
+
+* On payment:
+
+  * Visit status: `Completed / Checked Out`.
+
+#### 7. Follow-up & Reports
+
+* **Follow-up Scheduling**
+
+  * From Doctor’s visit screen:
+
+    * UI to book a follow-up appointment (date, time, reason).
+* **Basic Reports Screen**
+
+  * Daily summary:
+
+    * Number of patients per doctor.
+    * Total revenue.
+  * Simple filters (by date range, doctor).
+
+---
+
+### Data Model (Conceptual Types to Implement)
+
+Define TypeScript interfaces for at least:
+
+* `Patient`
+
+  * id, name, gender, DOB, phone, email, address, medicalHistorySummary, allergies, etc.
+* `Visit`
+
+  * id, patientId, doctorId, visitDateTime, visitType, payerType, status, triageId, invoiceId, etc.
+* `User`
+
+  * id, name, role (`"doctor" | "nurse" | "reception" | "pharmacy" | "cashier" | "admin"`).
+* `Triage`
+
+  * id, visitId, vitals, notes, createdAt.
+* `Prescription`
+
+  * id, visitId, drugId, dose, frequency, duration, instructions.
+* `Drug`
+
+  * id, name, code, form, strength, unit, minimumStock, currentStock, etc.
+* `Invoice`
+
+  * id, visitId, patientId, payerType, status, totalAmount, paidAmount, createdAt.
+* `InvoiceLine`
+
+  * id, invoiceId, itemType (`consultation | procedure | lab | drug | other`), itemId, description, quantity, unitPrice, total.
+* `Appointment`
+
+  * id, patientId, doctorId, dateTime, status, reason.
+
+Use these types consistently in your UI components and mock services.
+
+---
+
+### Final Output Expectations
+
+* Provide:
+
+  * A **high-level architecture description** (folder structure, major components).
+  * Example **TypeScript React components** for:
+
+    * Reception Dashboard
+    * Doctor Dashboard & Visit/EMR Screen
+    * Pharmacy Dashboard
+    * Billing/Invoice Screen
+  * Core **TypeScript interfaces/types** for main domain objects.
+  * Simple mock services or hooks (in TypeScript) to simulate data flow between modules.
+* The UI should clearly reflect the **clinic flow** described above:
+
+  * Appointment → Check-in → Triage → Consultation → Pharmacy → Billing → Follow-up.
