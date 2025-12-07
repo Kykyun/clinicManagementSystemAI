@@ -598,30 +598,18 @@ def ai_suggest_prescriptions(consultation_data: Dict, available_medicines: list,
         return {"success": False, "error": "AI prescription suggestions are not enabled"}
     
     if available_medicines:
-        medicines_list = "\n".join([
-            f"- {med['name']} ({med.get('generic_name', '')}) - {med.get('strength', '')} {med.get('form', '')}"
-            for med in available_medicines[:100]
-        ])
+        medicines_list = ", ".join([med['name'] for med in available_medicines[:30]])
     else:
-        medicines_list = "No medicines currently in the clinic inventory. You may suggest common medicines and set is_new_medicine to true for all."
+        medicines_list = "Paracetamol, Ibuprofen, Amoxicillin, Omeprazole, Cetirizine"
     
-    prompt = f"""Suggest 2-3 prescriptions for this consultation. BE VERY CONCISE.
+    prompt = f"""Suggest 2 prescriptions. Return JSON only.
 
-Patient: {consultation_data.get('patient_age', 'Unknown')} y/o {consultation_data.get('patient_gender', 'Unknown')}, Allergies: {consultation_data.get('allergies', 'None')}
-Complaint: {consultation_data.get('chief_complaint', '')}
-Diagnosis: {consultation_data.get('diagnosis', '')}
+Patient: {consultation_data.get('patient_age', 'Unknown')}yo, Allergies: {consultation_data.get('allergies', 'None')}
+Diagnosis: {consultation_data.get('diagnosis', '')[:100]}
 
-Available Medicines (use these names exactly):
-{medicines_list[:2000]}
+Medicines: {medicines_list[:500]}
 
-Return JSON only:
-{{"prescriptions":[{{"medicine_name":"exact name","dosage":"500mg","frequency":"BD","duration":"5 days","quantity":10,"instructions":"short instruction max 10 words","is_new_medicine":false}}],"clinical_notes":"one sentence","warnings":[]}}
-
-Rules:
-- Match medicine names EXACTLY to available list
-- instructions: MAX 10 words
-- clinical_notes: MAX 20 words
-- Limit to 2-3 medicines only"""
+{{"prescriptions":[{{"medicine_name":"name","dosage":"500mg","frequency":"BD","duration":"5d","quantity":10,"instructions":"take after food","is_new_medicine":false}}],"clinical_notes":"brief note","warnings":[]}}"""
 
     messages = [
         {"role": "system", "content": "You are a clinical pharmacology assistant. Return ONLY valid JSON. Be extremely concise - max 10 words per instruction field. Suggest 2-3 essential medications only."},
