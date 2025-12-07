@@ -46,7 +46,7 @@ class AILog(models.Model):
 
 class AIConfig(models.Model):
     is_enabled = models.BooleanField(default=True, help_text='Master switch for AI features')
-    model_name = models.CharField(max_length=50, default='gpt-4o-mini', help_text='OpenAI model to use')
+    model_name = models.CharField(max_length=50, default='gemini-2.5-flash', help_text='Gemini model to use')
     max_tokens = models.IntegerField(default=2000)
     temperature = models.DecimalField(max_digits=2, decimal_places=1, default=0.7)
     

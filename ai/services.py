@@ -3,7 +3,8 @@ import time
 import json
 import logging
 from typing import Optional, Dict, Any, Tuple
-from openai import OpenAI
+from google import genai
+from google.genai import types
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -20,9 +21,9 @@ class AIService:
     def _initialize(self):
         from .models import AIConfig
         self.config = AIConfig.get_config()
-        api_key = os.environ.get('OPENAI_API_KEY')
+        api_key = os.environ.get('GEMINI_API_KEY')
         if api_key:
-            self.client = OpenAI(api_key=api_key)
+            self.client = genai.Client(api_key=api_key)
     
     def is_enabled(self, feature: str = None) -> bool:
         if not self.client:
@@ -57,28 +58,57 @@ class AIService:
         except Exception as e:
             logger.error(f"Failed to log AI request: {e}")
     
-    def _call_openai(self, messages: list, user=None, action: str = "assistant", 
+    def _call_gemini(self, messages: list, user=None, action: str = "assistant", 
                      max_tokens: int = None) -> Tuple[bool, str, Dict]:
         if not self.is_enabled():
             return False, "AI features are not enabled", {}
         
         start_time = time.time()
+        system_instruction = None
+        input_summary = ""
+        
         try:
-            response = self.client.chat.completions.create(
+            contents = []
+            for msg in messages:
+                role = msg.get('role', '')
+                content_text = msg.get('content', '')
+                
+                if role == 'system':
+                    system_instruction = content_text
+                elif role == 'user':
+                    contents.append(types.Content(
+                        role='user',
+                        parts=[types.Part.from_text(text=content_text)]
+                    ))
+                    input_summary = content_text[:500]
+                elif role == 'assistant':
+                    contents.append(types.Content(
+                        role='model',
+                        parts=[types.Part.from_text(text=content_text)]
+                    ))
+            
+            config = types.GenerateContentConfig(
+                max_output_tokens=max_tokens or self.config.max_tokens,
+                temperature=float(self.config.temperature),
+                system_instruction=system_instruction if system_instruction else None,
+            )
+            
+            response = self.client.models.generate_content(
                 model=self.config.model_name,
-                messages=messages,
-                max_tokens=max_tokens or self.config.max_tokens,
-                temperature=float(self.config.temperature)
+                contents=contents,
+                config=config
             )
             
             response_time = int((time.time() - start_time) * 1000)
-            content = response.choices[0].message.content
-            tokens = response.usage.total_tokens if response.usage else 0
+            content = response.text if response.text else ""
+            tokens = 0
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                tokens = getattr(response.usage_metadata, 'total_token_count', 0) or 0
             
             self._log_request(
                 user=user,
                 action=action,
-                input_text=str(messages[-1].get('content', ''))[:500],
+                input_text=input_summary,
                 output_text=content[:500] if content else "",
                 tokens=tokens,
                 response_time=response_time
@@ -91,7 +121,7 @@ class AIService:
             error_msg = str(e)
             
             status = "error"
-            if "rate" in error_msg.lower():
+            if "rate" in error_msg.lower() or "quota" in error_msg.lower():
                 status = "rate_limited"
             elif "timeout" in error_msg.lower():
                 status = "timeout"
@@ -99,13 +129,13 @@ class AIService:
             self._log_request(
                 user=user,
                 action=action,
-                input_text=str(messages[-1].get('content', ''))[:500] if messages else "",
+                input_text=input_summary,
                 status=status,
                 response_time=response_time,
                 error=error_msg[:500]
             )
             
-            logger.error(f"OpenAI API error: {e}")
+            logger.error(f"Gemini API error: {e}")
             return False, f"AI service error: {error_msg}", {}
 
 
@@ -134,7 +164,7 @@ Only respond with valid JSON, no additional text."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "triage", max_tokens=500)
+    success, response, meta = service._call_gemini(messages, user, "triage", max_tokens=500)
     
     if not success:
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
@@ -176,7 +206,7 @@ Only respond with valid JSON. The ICD-10 codes are suggestions only."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "consultation_notes")
+    success, response, meta = service._call_gemini(messages, user, "consultation_notes")
     
     if not success:
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
@@ -224,7 +254,7 @@ Only respond with valid JSON."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "medical_summary")
+    success, response, meta = service._call_gemini(messages, user, "medical_summary")
     
     if not success:
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
@@ -273,7 +303,7 @@ Only respond with valid JSON."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "referral_letter")
+    success, response, meta = service._call_gemini(messages, user, "referral_letter")
     
     if not success:
         return {"success": False, "error": response, "disclaimer": AI_DISCLAIMER}
@@ -323,7 +353,7 @@ Only respond with valid JSON. Focus on items below minimum level first."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "stock_suggestion")
+    success, response, meta = service._call_gemini(messages, user, "stock_suggestion")
     
     if not success:
         return {"success": False, "error": response}
@@ -372,7 +402,7 @@ Provide 3-5 most relevant insights. Only respond with valid JSON."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "dashboard_insight", max_tokens=800)
+    success, response, meta = service._call_gemini(messages, user, "dashboard_insight", max_tokens=800)
     
     if not success:
         return {"success": False, "error": response}
@@ -410,7 +440,7 @@ Important rules:
         {"role": "user", "content": message}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "assistant")
+    success, response, meta = service._call_gemini(messages, user, "assistant")
     
     if not success:
         return {"success": False, "error": response}
@@ -450,7 +480,7 @@ Only respond with valid JSON."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "revenue_forecast")
+    success, response, meta = service._call_gemini(messages, user, "revenue_forecast")
     
     if not success:
         return {"success": False, "error": response}
@@ -497,7 +527,7 @@ Only flag genuinely unusual patterns. Respond with valid JSON only."""
         {"role": "user", "content": prompt}
     ]
     
-    success, response, meta = service._call_openai(messages, user, "anomaly_detection")
+    success, response, meta = service._call_gemini(messages, user, "anomaly_detection")
     
     if not success:
         return {"success": False, "error": response}
