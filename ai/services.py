@@ -109,7 +109,20 @@ class AIService:
             )
             
             response_time = int((time.time() - start_time) * 1000)
-            content = response.text if response.text else ""
+            
+            content = ""
+            try:
+                if response.text:
+                    content = response.text
+                elif hasattr(response, 'candidates') and response.candidates:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'content') and candidate.content:
+                        if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                            content = candidate.content.parts[0].text or ""
+            except Exception as text_err:
+                logger.warning(f"Could not extract text from response: {text_err}")
+                content = ""
+            
             tokens = 0
             if hasattr(response, 'usage_metadata') and response.usage_metadata:
                 tokens = getattr(response.usage_metadata, 'total_token_count', 0) or 0
