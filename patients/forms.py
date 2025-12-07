@@ -121,7 +121,8 @@ class ConsultationForm(forms.ModelForm):
         model = Consultation
         fields = ['chief_complaint', 'history_of_illness', 'examination_findings',
                   'diagnosis', 'treatment_plan', 'notes', 'vitals_bp', 'vitals_pulse',
-                  'vitals_temp', 'vitals_weight', 'vitals_height']
+                  'vitals_temp', 'vitals_weight', 'vitals_height',
+                  'mc_issued', 'mc_start_date', 'mc_end_date', 'mc_days', 'mc_reason', 'mc_notes']
         widgets = {
             'chief_complaint': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'history_of_illness': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -134,6 +135,12 @@ class ConsultationForm(forms.ModelForm):
             'vitals_temp': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
             'vitals_weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
             'vitals_height': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'mc_issued': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'mc_start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'mc_end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'mc_days': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'mc_reason': forms.Select(attrs={'class': 'form-select'}),
+            'mc_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
 
 

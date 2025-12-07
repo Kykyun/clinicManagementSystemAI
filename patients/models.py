@@ -90,6 +90,14 @@ class Visit(models.Model):
 
 
 class Consultation(models.Model):
+    MC_REASON_CHOICES = [
+        ('unfit_work', 'Unfit for Work'),
+        ('unfit_school', 'Unfit for School'),
+        ('hospitalization', 'Hospitalization'),
+        ('rest', 'Rest at Home'),
+        ('other', 'Other'),
+    ]
+    
     visit = models.OneToOneField(Visit, on_delete=models.CASCADE, related_name='consultation')
     doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     chief_complaint = models.TextField()
@@ -103,6 +111,12 @@ class Consultation(models.Model):
     vitals_temp = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
     vitals_weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     vitals_height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    mc_issued = models.BooleanField(default=False)
+    mc_start_date = models.DateField(null=True, blank=True)
+    mc_end_date = models.DateField(null=True, blank=True)
+    mc_days = models.IntegerField(null=True, blank=True)
+    mc_reason = models.CharField(max_length=20, choices=MC_REASON_CHOICES, blank=True)
+    mc_notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
