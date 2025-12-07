@@ -29,9 +29,21 @@
                         {{ form.visit_date }}
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Reason</label>
+                        <label class="form-label">Reason / Chief Complaint</label>
                         {{ form.reason }}
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-info btn-sm" id="btnAiTriage">
+                                <i class="bi bi-robot"></i> AI Triage Assessment
+                            </button>
+                        </div>
                     </div>
+                    
+                    <div id="triageResult" class="alert alert-info d-none mb-3">
+                        <h6><i class="bi bi-robot"></i> AI Triage Assessment</h6>
+                        <div id="triageContent"></div>
+                        <small class="text-muted mt-2 d-block" id="triageDisclaimer"></small>
+                    </div>
+                    
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg"></i> Register Visit
@@ -43,4 +55,68 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('btnAiTriage').addEventListener('click', function() {
+    const reasonField = document.querySelector('[name="reason"]') || document.getElementById('id_reason');
+    const complaint = reasonField ? reasonField.value : '';
+    
+    if (!complaint.trim()) {
+        alert('Please enter a reason/complaint first to get AI triage assessment.');
+        return;
+    }
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+    
+    fetch('/ai/api/triage/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ complaint: complaint })
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-robot"></i> AI Triage Assessment';
+        
+        if (data.success) {
+            const resultDiv = document.getElementById('triageResult');
+            const contentDiv = document.getElementById('triageContent');
+            const disclaimerDiv = document.getElementById('triageDisclaimer');
+            
+            let urgencyClass = 'bg-secondary';
+            if (data.urgency === 'emergency') urgencyClass = 'bg-danger';
+            else if (data.urgency === 'high') urgencyClass = 'bg-warning text-dark';
+            else if (data.urgency === 'medium') urgencyClass = 'bg-info';
+            else if (data.urgency === 'low') urgencyClass = 'bg-success';
+            
+            contentDiv.innerHTML = `
+                <div class="mb-2">
+                    <strong>Urgency:</strong> 
+                    <span class="badge ${urgencyClass}">${data.urgency ? data.urgency.toUpperCase() : 'N/A'}</span>
+                </div>
+                <div class="mb-2"><strong>Reason:</strong> ${data.urgency_reason || 'N/A'}</div>
+                <div class="mb-2"><strong>Suggested Department:</strong> ${data.suggested_department || 'General Practice'}</div>
+                <div class="mb-2"><strong>Estimated Duration:</strong> ${data.estimated_duration_minutes || 'N/A'} minutes</div>
+                ${data.key_symptoms && data.key_symptoms.length ? '<div><strong>Key Symptoms:</strong> ' + data.key_symptoms.join(', ') + '</div>' : ''}
+            `;
+            disclaimerDiv.textContent = data.disclaimer || '';
+            resultDiv.classList.remove('d-none');
+        } else {
+            alert('AI Triage Error: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-robot"></i> AI Triage Assessment';
+        alert('Failed to get AI triage: ' + error.message);
+    });
+});
+</script>
 {% endblock %}

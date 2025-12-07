@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Activity Logs - Clinic Management System{% endblock %}
+
+{% block page_title %}AI Activity Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <i class="bi bi-journal-text me-2"></i>AI Request Logs
+            </div>
+            <div class="col-md-6">
+                <form method="get" class="d-flex gap-2 justify-content-end">
+                    <select name="action" class="form-select form-select-sm" style="width: auto;">
+                        <option value="">All Actions</option>
+                        {% for value, label in action_choices %}
+                        <option value="{{ value }}" {% if filters.action == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="status" class="form-select form-select-sm" style="width: auto;">
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="date" name="date_from" class="form-control form-control-sm" style="width: auto;" 
+                           value="{{ filters.date_from|default:'' }}" placeholder="From">
+                    <input type="date" name="date_to" class="form-control form-control-sm" style="width: auto;" 
+                           value="{{ filters.date_to|default:'' }}" placeholder="To">
+                    <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    <a href="{% url 'ai:logs' %}" class="btn btn-sm btn-secondary">Clear</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Status</th>
+                        <th>Tokens</th>
+                        <th>Response Time</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>
+                            <small>{{ log.created_at|date:"M d, Y H:i" }}</small>
+                        </td>
+                        <td>{{ log.user.username|default:"System" }}</td>
+                        <td>{{ log.get_action_display }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if log.status == 'success' %}bg-success
+                                {% elif log.status == 'error' %}bg-danger
+                                {% elif log.status == 'timeout' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ log.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ log.tokens_used }}</td>
+                        <td>{{ log.response_time_ms }}ms</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                    data-bs-toggle="modal" data-bs-target="#logModal{{ log.id }}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            No AI activity logs found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% for log in logs %}
+<div class="modal fade" id="logModal{{ log.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ log.get_action_display }} - {{ log.created_at|date:"M d, Y H:i:s" }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong>User:</strong><br>{{ log.user.username|default:"System" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Status:</strong><br>
+                        <span class="badge 
+                            {% if log.status == 'success' %}bg-success
+                            {% elif log.status == 'error' %}bg-danger
+                            {% else %}bg-warning{% endif %}">
+                            {{ log.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Tokens Used:</strong><br>{{ log.tokens_used }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Response Time:</strong><br>{{ log.response_time_ms }}ms
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Input Summary:</strong>
+                    <pre class="bg-light p-2 rounded" style="white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{{ log.input_summary }}</pre>
+                </div>
+                
+                {% if log.output_summary %}
+                <div class="mb-3">
+                    <strong>Output Summary:</strong>
+                    <pre class="bg-light p-2 rounded" style="white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{{ log.output_summary }}</pre>
+                </div>
+                {% endif %}
+                
+                {% if log.error_message %}
+                <div class="mb-3">
+                    <strong>Error:</strong>
+                    <pre class="bg-danger text-white p-2 rounded" style="white-space: pre-wrap;">{{ log.error_message }}</pre>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="mt-4">
+    <a href="{% url 'ai:config' %}" class="btn btn-outline-primary">
+        <i class="bi bi-gear me-1"></i>AI Configuration
+    </a>
+</div>
+{% endblock %}

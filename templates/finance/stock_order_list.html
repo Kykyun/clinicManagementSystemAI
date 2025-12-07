@@ -4,6 +4,22 @@
 {% block page_title %}Stock Orders{% endblock %}
 
 {% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-robot"></i> AI Stock Suggestions</span>
+        <button type="button" class="btn btn-outline-info btn-sm" id="btnAiStockSuggestions">
+            <i class="bi bi-lightbulb"></i> Get AI Suggestions
+        </button>
+    </div>
+    <div class="card-body d-none" id="stockSuggestionsContent">
+        <div id="stockSuggestionsLoading" class="text-center py-3 d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Analyzing stock levels...</p>
+        </div>
+        <div id="stockSuggestionsResult"></div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-box-seam"></i> Stock Orders</span>
@@ -67,4 +83,77 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('btnAiStockSuggestions').addEventListener('click', function() {
+    const btn = this;
+    const contentDiv = document.getElementById('stockSuggestionsContent');
+    const loadingDiv = document.getElementById('stockSuggestionsLoading');
+    const resultDiv = document.getElementById('stockSuggestionsResult');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+    contentDiv.classList.remove('d-none');
+    loadingDiv.classList.remove('d-none');
+    resultDiv.innerHTML = '';
+    
+    fetch('/ai/api/stock-suggestions/', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lightbulb"></i> Get AI Suggestions';
+        loadingDiv.classList.add('d-none');
+        
+        if (data.success) {
+            let html = '';
+            
+            if (data.summary) {
+                html += `<div class="alert alert-info mb-3"><i class="bi bi-info-circle"></i> ${data.summary}</div>`;
+            }
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                html += '<table class="table table-sm">';
+                html += '<thead><tr><th>Item</th><th>Current</th><th>Suggested Order</th><th>Priority</th><th>Reasoning</th></tr></thead>';
+                html += '<tbody>';
+                
+                data.suggestions.forEach(s => {
+                    let priorityClass = 'bg-secondary';
+                    if (s.priority === 'high') priorityClass = 'bg-danger';
+                    else if (s.priority === 'medium') priorityClass = 'bg-warning text-dark';
+                    else if (s.priority === 'low') priorityClass = 'bg-success';
+                    
+                    html += `<tr>
+                        <td>${s.item_name}</td>
+                        <td>${s.current_stock}</td>
+                        <td><strong>${s.suggested_order}</strong></td>
+                        <td><span class="badge ${priorityClass}">${s.priority || 'N/A'}</span></td>
+                        <td><small>${s.reasoning || ''}</small></td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+            } else {
+                html += '<p class="text-muted">No stock suggestions at this time. Stock levels appear adequate.</p>';
+            }
+            
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> ${data.error || 'Failed to get AI suggestions'}</div>`;
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lightbulb"></i> Get AI Suggestions';
+        loadingDiv.classList.add('d-none');
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> Error: ${error.message}</div>`;
+    });
+});
+</script>
 {% endblock %}

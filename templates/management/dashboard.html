@@ -170,6 +170,22 @@
     <a href="{% url 'setup_app:medicine_list' %}?low_stock=1">View Details</a>
 </div>
 {% endif %}
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-robot"></i> AI Insights</span>
+        <button type="button" class="btn btn-outline-info btn-sm" id="btnAiInsights">
+            <i class="bi bi-lightbulb"></i> Get AI Insights
+        </button>
+    </div>
+    <div class="card-body d-none" id="aiInsightsContent">
+        <div id="aiInsightsLoading" class="text-center py-3 d-none">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Analyzing clinic data...</p>
+        </div>
+        <div id="aiInsightsResult"></div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -217,5 +233,56 @@ fetch('{% url "management_app:dashboard_data" %}')
             }
         });
     });
+
+document.getElementById('btnAiInsights').addEventListener('click', function() {
+    const btn = this;
+    const contentDiv = document.getElementById('aiInsightsContent');
+    const loadingDiv = document.getElementById('aiInsightsLoading');
+    const resultDiv = document.getElementById('aiInsightsResult');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+    contentDiv.classList.remove('d-none');
+    loadingDiv.classList.remove('d-none');
+    resultDiv.innerHTML = '';
+    
+    fetch('/ai/api/dashboard-insights/', {
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lightbulb"></i> Get AI Insights';
+        loadingDiv.classList.add('d-none');
+        
+        if (data.success && data.insights) {
+            let html = '<div class="row">';
+            data.insights.forEach(insight => {
+                let iconClass = 'bi-info-circle text-info';
+                if (insight.type === 'trend') iconClass = 'bi-graph-up text-primary';
+                else if (insight.type === 'alert') iconClass = 'bi-exclamation-triangle text-warning';
+                
+                html += `<div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6><i class="bi ${insight.icon || iconClass}"></i> ${insight.title}</h6>
+                            <p class="mb-0 text-muted small">${insight.message}</p>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger">${data.error || 'Failed to get AI insights'}</div>`;
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-lightbulb"></i> Get AI Insights';
+        loadingDiv.classList.add('d-none');
+        resultDiv.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+    });
+});
 </script>
 {% endblock %}

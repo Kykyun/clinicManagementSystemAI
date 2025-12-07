@@ -6,7 +6,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-3">
-        <div class="card">
+        <div class="card mb-3">
             <div class="card-header">Patient Info</div>
             <div class="card-body">
                 <h6>{{ visit.patient.full_name }}</h6>
@@ -19,6 +19,22 @@
                     {% for a in visit.patient.allergies.all %}{{ a.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
                 </div>
                 {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-robot me-2"></i>AI Assistant
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Enter your clinical notes in any format and let AI help structure them.</p>
+                <button type="button" class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#aiNotesModal">
+                    <i class="bi bi-magic me-1"></i>AI Structure Notes
+                </button>
+                <hr>
+                <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="btnGetMedicalSummary">
+                    <i class="bi bi-file-medical me-1"></i>Get Medical Summary
+                </button>
             </div>
         </div>
     </div>
@@ -69,6 +85,7 @@
                     <div class="mb-3">
                         <label class="form-label">Diagnosis *</label>
                         {{ form.diagnosis }}
+                        <div id="icd10Suggestions" class="mt-2"></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Treatment Plan</label>
@@ -90,4 +107,258 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="aiNotesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-robot me-2"></i>AI Clinical Notes Assistant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Enter your clinical observations in any format. AI will help structure them into proper clinical documentation.
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Raw Clinical Notes</label>
+                    <textarea id="rawNotesInput" class="form-control" rows="6" placeholder="Example: Patient complains of fever and headache for 3 days. Temp 38.5, BP normal. Throat slightly red. Likely viral infection. Prescribed paracetamol and rest."></textarea>
+                </div>
+                
+                <button type="button" id="btnStructureNotes" class="btn btn-primary">
+                    <i class="bi bi-magic me-1"></i>Structure Notes
+                </button>
+                
+                <div id="aiStructuredResult" class="mt-4" style="display: none;">
+                    <hr>
+                    <h6>Structured Output</h6>
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <span id="aiDisclaimer"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small">History</label>
+                            <textarea id="aiHistory" class="form-control form-control-sm" rows="3" readonly></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small">Examination</label>
+                            <textarea id="aiExamination" class="form-control form-control-sm" rows="3" readonly></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small">Assessment</label>
+                            <textarea id="aiAssessment" class="form-control form-control-sm" rows="3" readonly></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small">Plan</label>
+                            <textarea id="aiPlan" class="form-control form-control-sm" rows="3" readonly></textarea>
+                        </div>
+                    </div>
+                    
+                    <div id="aiIcd10Codes" class="mb-3"></div>
+                    
+                    <button type="button" id="btnApplyNotes" class="btn btn-success">
+                        <i class="bi bi-check-lg me-1"></i>Apply to Form
+                    </button>
+                </div>
+                
+                <div id="aiLoading" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">AI is processing your notes...</p>
+                </div>
+                
+                <div id="aiError" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="medicalSummaryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-file-medical me-2"></i>AI Medical History Summary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="summaryLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Generating medical summary...</p>
+                </div>
+                
+                <div id="summaryContent" style="display: none;">
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <span id="summaryDisclaimer"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Key Chronic Conditions</h6>
+                            <ul id="chronicConditions" class="list-group list-group-flush mb-3"></ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Important Allergies</h6>
+                            <ul id="importantAllergies" class="list-group list-group-flush mb-3"></ul>
+                        </div>
+                    </div>
+                    
+                    <h6>Clinical Alerts</h6>
+                    <div id="clinicalAlerts" class="mb-3"></div>
+                    
+                    <h6>Summary</h6>
+                    <p id="summaryParagraph" class="border p-3 bg-light rounded"></p>
+                </div>
+                
+                <div id="summaryError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const patientId = {{ visit.patient.id }};
+    
+    document.getElementById('btnStructureNotes').addEventListener('click', function() {
+        const rawNotes = document.getElementById('rawNotesInput').value.trim();
+        if (!rawNotes) {
+            alert('Please enter some clinical notes first.');
+            return;
+        }
+        
+        document.getElementById('aiLoading').style.display = 'block';
+        document.getElementById('aiStructuredResult').style.display = 'none';
+        document.getElementById('aiError').style.display = 'none';
+        
+        fetch('{% url "ai:api_structure_notes" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ raw_notes: rawNotes })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('aiLoading').style.display = 'none';
+            
+            if (data.success) {
+                document.getElementById('aiStructuredResult').style.display = 'block';
+                document.getElementById('aiDisclaimer').textContent = data.disclaimer || '';
+                document.getElementById('aiHistory').value = data.history || '';
+                document.getElementById('aiExamination').value = data.examination || '';
+                document.getElementById('aiAssessment').value = data.assessment || '';
+                document.getElementById('aiPlan').value = data.plan || '';
+                
+                const icd10Container = document.getElementById('aiIcd10Codes');
+                icd10Container.innerHTML = '';
+                if (data.suggested_icd10_codes && data.suggested_icd10_codes.length > 0) {
+                    let html = '<h6 class="small">Suggested ICD-10 Codes</h6><div class="d-flex flex-wrap gap-2">';
+                    data.suggested_icd10_codes.forEach(code => {
+                        html += `<span class="badge bg-secondary">${code.code}: ${code.description}</span>`;
+                    });
+                    html += '</div>';
+                    icd10Container.innerHTML = html;
+                }
+            } else {
+                document.getElementById('aiError').style.display = 'block';
+                document.getElementById('aiError').textContent = data.error || 'Failed to structure notes.';
+            }
+        })
+        .catch(error => {
+            document.getElementById('aiLoading').style.display = 'none';
+            document.getElementById('aiError').style.display = 'block';
+            document.getElementById('aiError').textContent = 'An error occurred. Please try again.';
+        });
+    });
+    
+    document.getElementById('btnApplyNotes').addEventListener('click', function() {
+        const history = document.getElementById('aiHistory').value;
+        const examination = document.getElementById('aiExamination').value;
+        const assessment = document.getElementById('aiAssessment').value;
+        const plan = document.getElementById('aiPlan').value;
+        
+        if (history) {
+            document.getElementById('id_history_of_illness').value = history;
+        }
+        if (examination) {
+            document.getElementById('id_examination_findings').value = examination;
+        }
+        if (assessment) {
+            document.getElementById('id_diagnosis').value = assessment;
+        }
+        if (plan) {
+            document.getElementById('id_treatment_plan').value = plan;
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('aiNotesModal'));
+        modal.hide();
+    });
+    
+    document.getElementById('btnGetMedicalSummary').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('medicalSummaryModal'));
+        modal.show();
+        
+        document.getElementById('summaryLoading').style.display = 'block';
+        document.getElementById('summaryContent').style.display = 'none';
+        document.getElementById('summaryError').style.display = 'none';
+        
+        fetch(`/ai/api/medical-summary/${patientId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('summaryLoading').style.display = 'none';
+            
+            if (data.success) {
+                document.getElementById('summaryContent').style.display = 'block';
+                document.getElementById('summaryDisclaimer').textContent = data.disclaimer || '';
+                
+                const chronicList = document.getElementById('chronicConditions');
+                chronicList.innerHTML = '';
+                (data.key_chronic_conditions || []).forEach(condition => {
+                    chronicList.innerHTML += `<li class="list-group-item py-1">${condition}</li>`;
+                });
+                if (chronicList.innerHTML === '') {
+                    chronicList.innerHTML = '<li class="list-group-item py-1 text-muted">None recorded</li>';
+                }
+                
+                const allergyList = document.getElementById('importantAllergies');
+                allergyList.innerHTML = '';
+                (data.important_allergies || []).forEach(allergy => {
+                    allergyList.innerHTML += `<li class="list-group-item py-1 text-danger">${allergy}</li>`;
+                });
+                if (allergyList.innerHTML === '') {
+                    allergyList.innerHTML = '<li class="list-group-item py-1 text-muted">None recorded</li>';
+                }
+                
+                const alertsDiv = document.getElementById('clinicalAlerts');
+                alertsDiv.innerHTML = '';
+                (data.clinical_alerts || []).forEach(alert => {
+                    alertsDiv.innerHTML += `<div class="alert alert-warning py-2">${alert}</div>`;
+                });
+                
+                document.getElementById('summaryParagraph').textContent = data.summary_paragraph || 'No summary available.';
+            } else {
+                document.getElementById('summaryError').style.display = 'block';
+                document.getElementById('summaryError').textContent = data.error || 'Failed to generate summary.';
+            }
+        })
+        .catch(error => {
+            document.getElementById('summaryLoading').style.display = 'none';
+            document.getElementById('summaryError').style.display = 'block';
+            document.getElementById('summaryError').textContent = 'An error occurred. Please try again.';
+        });
+    });
+});
+</script>
 {% endblock %}

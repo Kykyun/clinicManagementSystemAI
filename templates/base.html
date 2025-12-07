@@ -196,6 +196,16 @@
         <a href="{% url 'setup_app:panel_list' %}" class="nav-link">
             <i class="bi bi-building"></i> Panels
         </a>
+        
+        {% if user.role == 'admin' %}
+        <div class="nav-section">AI Features</div>
+        <a href="{% url 'ai:config' %}" class="nav-link">
+            <i class="bi bi-robot"></i> AI Configuration
+        </a>
+        <a href="{% url 'ai:logs' %}" class="nav-link">
+            <i class="bi bi-journal-text"></i> AI Logs
+        </a>
+        {% endif %}
     </nav>
     
     <div class="main-content">
@@ -251,5 +261,105 @@
         });
     </script>
     {% block extra_js %}{% endblock %}
+    
+    {% if user.is_authenticated %}
+    <div id="aiAssistantPanel" class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1050;">
+        <button type="button" class="btn btn-primary rounded-circle shadow-lg" id="btnToggleAssistant" style="width: 60px; height: 60px;">
+            <i class="bi bi-robot fs-4"></i>
+        </button>
+        
+        <div id="assistantChatBox" class="card shadow-lg d-none" style="width: 350px; position: absolute; bottom: 70px; right: 0;">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-robot"></i> AI Assistant</span>
+                <button type="button" class="btn-close btn-close-white btn-sm" id="btnCloseAssistant"></button>
+            </div>
+            <div class="card-body" style="height: 300px; overflow-y: auto;" id="assistantMessages">
+                <div class="text-muted small text-center">
+                    <p>How can I help you today?</p>
+                    <p class="small">Ask about system features, workflows, or clinic operations.</p>
+                </div>
+            </div>
+            <div class="card-footer p-2">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" id="assistantInput" placeholder="Type your question...">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnSendMessage">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    (function() {
+        const toggleBtn = document.getElementById('btnToggleAssistant');
+        const closeBtn = document.getElementById('btnCloseAssistant');
+        const chatBox = document.getElementById('assistantChatBox');
+        const messagesDiv = document.getElementById('assistantMessages');
+        const inputField = document.getElementById('assistantInput');
+        const sendBtn = document.getElementById('btnSendMessage');
+        
+        toggleBtn.addEventListener('click', function() {
+            chatBox.classList.toggle('d-none');
+            if (!chatBox.classList.contains('d-none')) {
+                inputField.focus();
+            }
+        });
+        
+        closeBtn.addEventListener('click', function() {
+            chatBox.classList.add('d-none');
+        });
+        
+        function addMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `mb-2 ${isUser ? 'text-end' : ''}`;
+            msgDiv.innerHTML = `<span class="badge ${isUser ? 'bg-primary' : 'bg-secondary'} text-wrap text-start" style="max-width: 90%; white-space: pre-wrap;">${text}</span>`;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function sendMessage() {
+            const message = inputField.value.trim();
+            if (!message) return;
+            
+            addMessage(message, true);
+            inputField.value = '';
+            sendBtn.disabled = true;
+            
+            const currentPage = window.location.pathname;
+            
+            fetch('/ai/api/assistant/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    context: `User is on page: ${currentPage}`
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                sendBtn.disabled = false;
+                if (data.success) {
+                    addMessage(data.response, false);
+                } else {
+                    addMessage('Sorry, I encountered an error: ' + (data.error || 'Unknown error'), false);
+                }
+            })
+            .catch(error => {
+                sendBtn.disabled = false;
+                addMessage('Failed to connect: ' + error.message, false);
+            });
+        }
+        
+        sendBtn.addEventListener('click', sendMessage);
+        inputField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    })();
+    </script>
+    {% endif %}
 </body>
 </html>

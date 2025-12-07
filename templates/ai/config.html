@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Configuration - Clinic Management System{% endblock %}
+
+{% block page_title %}AI Configuration{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-robot me-2"></i>AI Settings</span>
+                <span class="badge {% if api_status == 'Connected' %}bg-success{% else %}bg-warning{% endif %}">
+                    {{ api_status }}
+                </span>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h6 class="text-muted mb-3">General Settings</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                {{ form.is_enabled }}
+                                <label class="form-check-label" for="{{ form.is_enabled.id_for_label }}">
+                                    <strong>Enable AI Features</strong>
+                                    <small class="text-muted d-block">Master switch for all AI functionality</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="{{ form.model_name.id_for_label }}" class="form-label">AI Model</label>
+                            {{ form.model_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.max_tokens.id_for_label }}" class="form-label">Max Tokens</label>
+                            {{ form.max_tokens }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="{{ form.temperature.id_for_label }}" class="form-label">Temperature</label>
+                            {{ form.temperature }}
+                            <small class="text-muted">0 = focused, 1 = creative</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h6 class="text-muted mb-3">Feature Toggles</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                {{ form.triage_enabled }}
+                                <label class="form-check-label" for="{{ form.triage_enabled.id_for_label }}">
+                                    Triage & Urgency Classification
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.consultation_notes_enabled }}
+                                <label class="form-check-label" for="{{ form.consultation_notes_enabled.id_for_label }}">
+                                    Consultation Notes Structuring
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.medical_summary_enabled }}
+                                <label class="form-check-label" for="{{ form.medical_summary_enabled.id_for_label }}">
+                                    Medical History Summary
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.referral_letter_enabled }}
+                                <label class="form-check-label" for="{{ form.referral_letter_enabled.id_for_label }}">
+                                    Referral Letter Drafting
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.assistant_enabled }}
+                                <label class="form-check-label" for="{{ form.assistant_enabled.id_for_label }}">
+                                    AI Assistant
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-2">
+                                {{ form.stock_suggestion_enabled }}
+                                <label class="form-check-label" for="{{ form.stock_suggestion_enabled.id_for_label }}">
+                                    Stock Order Suggestions
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.dashboard_insights_enabled }}
+                                <label class="form-check-label" for="{{ form.dashboard_insights_enabled.id_for_label }}">
+                                    Dashboard Insights
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.revenue_forecast_enabled }}
+                                <label class="form-check-label" for="{{ form.revenue_forecast_enabled.id_for_label }}">
+                                    Revenue Forecasting
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                {{ form.anomaly_detection_enabled }}
+                                <label class="form-check-label" for="{{ form.anomaly_detection_enabled.id_for_label }}">
+                                    Financial Anomaly Detection
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'management_app:dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Save Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-graph-up me-2"></i>Today's Usage
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="h3 mb-0 text-primary">{{ stats.today_requests }}</div>
+                        <small class="text-muted">Requests</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h3 mb-0 text-primary">{{ stats.today_tokens|floatformat:0 }}</div>
+                        <small class="text-muted">Tokens</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 mb-0 text-success">{{ stats.success_rate }}%</div>
+                        <small class="text-muted">Success Rate</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h3 mb-0 text-info">{{ stats.avg_response_time }}ms</div>
+                        <small class="text-muted">Avg Response</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Recent Activity</span>
+                <a href="{% url 'ai:logs' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for log in recent_logs %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted">{{ log.get_action_display }}</small>
+                                <br>
+                                <span class="badge {% if log.status == 'success' %}bg-success{% elif log.status == 'error' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ log.status }}
+                                </span>
+                            </div>
+                            <small class="text-muted">{{ log.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        No activity yet
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Note:</strong> AI features require an OpenAI API key to be configured as the <code>OPENAI_API_KEY</code> environment variable.
+    All AI-generated content includes a disclaimer and should be reviewed by qualified healthcare professionals.
+</div>
+{% endblock %}

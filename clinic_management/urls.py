@@ -13,6 +13,7 @@ urlpatterns = [
     path('management/', include('management_app.urls')),
     path('setup/', include('setup_app.urls')),
     path('einvoice/', include('einvoice.urls')),
+    path('ai/', include('ai.urls')),
 ]
 
 if settings.DEBUG:

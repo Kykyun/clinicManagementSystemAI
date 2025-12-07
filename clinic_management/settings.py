@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'management_app',
     'setup_app',
     'einvoice',
+    'ai',
 ]
 
 MIDDLEWARE = [

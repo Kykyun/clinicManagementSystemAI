@@ -137,6 +137,148 @@
                 <td class="text-end"><strong>${{ einvoice_stats.total_amount|floatformat:2|default:"0.00" }}</strong></td>
             </tr>
         </table>
+        
+        <hr class="my-4">
+        
+        <h5><i class="bi bi-robot"></i> AI Financial Analysis</h5>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-graph-up-arrow"></i> Revenue Forecast</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnRevenueForecast">
+                            <i class="bi bi-lightbulb"></i> Generate
+                        </button>
+                    </div>
+                    <div class="card-body d-none" id="revenueForecastContent">
+                        <div id="revenueForecastLoading" class="text-center py-2 d-none">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                        </div>
+                        <div id="revenueForecastResult"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-shield-exclamation"></i> Anomaly Detection</span>
+                        <button type="button" class="btn btn-outline-warning btn-sm" id="btnAnomalyDetection">
+                            <i class="bi bi-search"></i> Scan
+                        </button>
+                    </div>
+                    <div class="card-body d-none" id="anomalyDetectionContent">
+                        <div id="anomalyDetectionLoading" class="text-center py-2 d-none">
+                            <div class="spinner-border spinner-border-sm text-warning"></div>
+                        </div>
+                        <div id="anomalyDetectionResult"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('btnRevenueForecast').addEventListener('click', function() {
+    const btn = this;
+    const contentDiv = document.getElementById('revenueForecastContent');
+    const loadingDiv = document.getElementById('revenueForecastLoading');
+    const resultDiv = document.getElementById('revenueForecastResult');
+    
+    btn.disabled = true;
+    contentDiv.classList.remove('d-none');
+    loadingDiv.classList.remove('d-none');
+    
+    fetch('/ai/api/revenue-forecast/?days=7', {
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        loadingDiv.classList.add('d-none');
+        
+        if (data.success) {
+            let html = `<div class="mb-2"><strong>Trend:</strong> <span class="badge bg-info">${data.trend || 'N/A'}</span> 
+                        <strong>Confidence:</strong> <span class="badge bg-secondary">${data.confidence || 'N/A'}</span></div>`;
+            
+            if (data.forecast && data.forecast.length > 0) {
+                html += '<table class="table table-sm"><thead><tr><th>Date</th><th>Visits</th><th>Revenue</th></tr></thead><tbody>';
+                data.forecast.forEach(f => {
+                    html += `<tr><td>${f.date}</td><td>${f.predicted_visits}</td><td>$${f.predicted_revenue}</td></tr>`;
+                });
+                html += '</tbody></table>';
+            }
+            
+            if (data.factors && data.factors.length > 0) {
+                html += '<small class="text-muted">Factors: ' + data.factors.join(', ') + '</small>';
+            }
+            
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger py-1 mb-0">${data.error || 'Failed'}</div>`;
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        loadingDiv.classList.add('d-none');
+        resultDiv.innerHTML = `<div class="alert alert-danger py-1 mb-0">${error.message}</div>`;
+    });
+});
+
+document.getElementById('btnAnomalyDetection').addEventListener('click', function() {
+    const btn = this;
+    const contentDiv = document.getElementById('anomalyDetectionContent');
+    const loadingDiv = document.getElementById('anomalyDetectionLoading');
+    const resultDiv = document.getElementById('anomalyDetectionResult');
+    
+    btn.disabled = true;
+    contentDiv.classList.remove('d-none');
+    loadingDiv.classList.remove('d-none');
+    
+    fetch('/ai/api/anomaly-detection/', {
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        loadingDiv.classList.add('d-none');
+        
+        if (data.success) {
+            let html = '';
+            
+            if (data.summary) {
+                html += `<p class="mb-2"><small>${data.summary}</small></p>`;
+            }
+            
+            if (data.anomalies && data.anomalies.length > 0) {
+                data.anomalies.forEach(a => {
+                    let severityClass = 'bg-secondary';
+                    if (a.severity === 'high') severityClass = 'bg-danger';
+                    else if (a.severity === 'medium') severityClass = 'bg-warning text-dark';
+                    else if (a.severity === 'low') severityClass = 'bg-info';
+                    
+                    html += `<div class="alert alert-light py-2 mb-2">
+                        <span class="badge ${severityClass}">${a.severity || 'N/A'}</span>
+                        <strong>${a.description}</strong>
+                        <br><small class="text-muted">${a.recommendation || ''}</small>
+                    </div>`;
+                });
+            } else {
+                html += '<p class="text-success mb-0"><i class="bi bi-check-circle"></i> No anomalies detected.</p>';
+            }
+            
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger py-1 mb-0">${data.error || 'Failed'}</div>`;
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        loadingDiv.classList.add('d-none');
+        resultDiv.innerHTML = `<div class="alert alert-danger py-1 mb-0">${error.message}</div>`;
+    });
+});
+</script>
 {% endblock %}
