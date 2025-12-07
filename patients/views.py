@@ -153,7 +153,18 @@ def consultation_create(request, visit_id):
             return redirect('patients:consultation_detail', pk=consultation.pk)
     else:
         form = ConsultationForm()
-    return render(request, 'patients/consultation_form.html', {'form': form, 'visit': visit, 'title': 'New Consultation'})
+    
+    past_visits = Visit.objects.filter(
+        patient=visit.patient,
+        status='completed'
+    ).exclude(pk=visit.pk).select_related('consultation').order_by('-visit_date')[:5]
+    
+    return render(request, 'patients/consultation_form.html', {
+        'form': form, 
+        'visit': visit, 
+        'title': 'New Consultation',
+        'past_visits': past_visits
+    })
 
 
 @login_required
@@ -168,6 +179,7 @@ def consultation_detail(request, pk):
 @doctor_required
 def consultation_edit(request, pk):
     consultation = get_object_or_404(Consultation, pk=pk)
+    visit = consultation.visit
     if request.method == 'POST':
         form = ConsultationForm(request.POST, instance=consultation)
         if form.is_valid():
@@ -176,7 +188,18 @@ def consultation_edit(request, pk):
             return redirect('patients:consultation_detail', pk=consultation.pk)
     else:
         form = ConsultationForm(instance=consultation)
-    return render(request, 'patients/consultation_form.html', {'form': form, 'visit': consultation.visit, 'title': 'Edit Consultation'})
+    
+    past_visits = Visit.objects.filter(
+        patient=visit.patient,
+        status='completed'
+    ).exclude(pk=visit.pk).select_related('consultation').order_by('-visit_date')[:5]
+    
+    return render(request, 'patients/consultation_form.html', {
+        'form': form, 
+        'visit': visit, 
+        'title': 'Edit Consultation',
+        'past_visits': past_visits
+    })
 
 
 @login_required

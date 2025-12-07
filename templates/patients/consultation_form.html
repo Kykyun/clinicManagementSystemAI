@@ -236,6 +236,35 @@
                 </button>
             </div>
         </div>
+        
+        {% if past_visits %}
+        <div class="patient-card card mt-3">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Recent Visits
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for pv in past_visits %}
+                    <div class="list-group-item px-3 py-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted d-block">{{ pv.visit_date|date:"M d, Y" }}</small>
+                                {% if pv.consultation %}
+                                <span class="small fw-medium">{{ pv.consultation.diagnosis|truncatewords:8 }}</span>
+                                {% if pv.consultation.mc_issued and pv.consultation.mc_days %}
+                                <span class="badge bg-info ms-1" style="font-size: 0.65rem;">MC {{ pv.consultation.mc_days }}d</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="small text-muted">No consultation</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     
     <div class="col-lg-9">
@@ -340,6 +369,48 @@
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Treatment Plan</label>
                         {{ form.treatment_plan }}
+                    </div>
+                    
+                    <!-- Medical Certificate Section -->
+                    <div class="mb-4">
+                        <div class="card" style="border: 1px solid #E2E8F0; border-radius: 12px;">
+                            <div class="card-header d-flex align-items-center justify-content-between py-3" style="background: #F7F9FC; border-radius: 12px 12px 0 0; border-bottom: 1px solid #E2E8F0;">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-medical me-2" style="color: #2A7DE1;"></i>
+                                    <span class="fw-semibold">Medical Certificate (MC)</span>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    {{ form.mc_issued }}
+                                    <label class="form-check-label small" for="id_mc_issued">Issue MC</label>
+                                </div>
+                            </div>
+                            <div class="card-body p-3" id="mcFieldsContainer" style="display: none;">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Start Date</label>
+                                        {{ form.mc_start_date }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">End Date</label>
+                                        {{ form.mc_end_date }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Days</label>
+                                        {{ form.mc_days }}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Reason</label>
+                                        {{ form.mc_reason }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Notes</label>
+                                        {{ form.mc_notes }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="mb-4">
@@ -663,6 +734,64 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('summaryError').textContent = 'An error occurred. Please try again.';
         });
     });
+    
+    // MC (Medical Certificate) functionality
+    const mcIssuedCheckbox = document.getElementById('id_mc_issued');
+    const mcFieldsContainer = document.getElementById('mcFieldsContainer');
+    const mcStartDate = document.getElementById('id_mc_start_date');
+    const mcEndDate = document.getElementById('id_mc_end_date');
+    const mcDays = document.getElementById('id_mc_days');
+    
+    function toggleMCFields() {
+        if (mcIssuedCheckbox && mcFieldsContainer) {
+            mcFieldsContainer.style.display = mcIssuedCheckbox.checked ? 'block' : 'none';
+            if (mcIssuedCheckbox.checked && mcStartDate && !mcStartDate.value) {
+                const today = new Date().toISOString().split('T')[0];
+                mcStartDate.value = today;
+            }
+        }
+    }
+    
+    function calculateMCDays() {
+        if (mcStartDate && mcEndDate && mcDays && mcStartDate.value && mcEndDate.value) {
+            const start = new Date(mcStartDate.value);
+            const end = new Date(mcEndDate.value);
+            if (end >= start) {
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                mcDays.value = diffDays;
+            }
+        }
+    }
+    
+    function calculateEndDateFromDays() {
+        if (mcStartDate && mcDays && mcEndDate && mcStartDate.value && mcDays.value) {
+            const start = new Date(mcStartDate.value);
+            const days = parseInt(mcDays.value);
+            if (days > 0) {
+                const end = new Date(start);
+                end.setDate(start.getDate() + days - 1);
+                mcEndDate.value = end.toISOString().split('T')[0];
+            }
+        }
+    }
+    
+    if (mcIssuedCheckbox) {
+        toggleMCFields();
+        mcIssuedCheckbox.addEventListener('change', toggleMCFields);
+    }
+    
+    if (mcStartDate) {
+        mcStartDate.addEventListener('change', calculateMCDays);
+    }
+    
+    if (mcEndDate) {
+        mcEndDate.addEventListener('change', calculateMCDays);
+    }
+    
+    if (mcDays) {
+        mcDays.addEventListener('change', calculateEndDateFromDays);
+    }
 });
 </script>
 {% endblock %}
