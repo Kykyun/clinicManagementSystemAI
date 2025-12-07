@@ -38,15 +38,15 @@
         }
         .queue-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
             padding: 0 2rem 2rem;
         }
         .queue-card {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 20px;
+            padding: 2rem;
             border: 1px solid rgba(255,255,255,0.1);
             transition: transform 0.3s ease;
         }
@@ -54,20 +54,38 @@
             transform: translateY(-4px);
         }
         .queue-number {
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 6rem;
+            font-weight: 800;
             line-height: 1;
+            color: #fff;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .patient-initials {
-            width: 48px;
-            height: 48px;
+            width: 64px;
+            height: 64px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
+            font-size: 1.5rem;
+        }
+        .room-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--success);
+            text-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+        }
+        .room-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.7;
+        }
+        .doctor-name {
             font-size: 1.25rem;
+            font-weight: 500;
         }
         .status-badge {
             padding: 0.5rem 1rem;
@@ -114,12 +132,12 @@
             </div>
             <div class="mb-2">
                 <small class="opacity-75">Doctor</small>
-                <div>{{ item.doctor }}</div>
+                <div class="doctor-name">{{ item.doctor }}</div>
             </div>
-            {% if item.room != '-' %}
+            {% if item.room and item.room != '-' %}
             <div class="mb-3">
-                <small class="opacity-75">Room</small>
-                <div>{{ item.room }}</div>
+                <span class="room-label">Room</span>
+                <div class="room-display">{{ item.room }}</div>
             </div>
             {% endif %}
             <span class="status-badge status-{{ item.status_class }}">
