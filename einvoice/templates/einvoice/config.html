@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}E-Invoice Configuration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-gear"></i> E-Invoice Configuration</h2>
+        <a href="{% url 'einvoice:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    {% if config.environment == 'sandbox' %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>SANDBOX MODE</strong> - Currently configured for testing environment.
+    </div>
+    {% elif config.environment == 'production' %}
+    <div class="alert alert-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <strong>PRODUCTION MODE</strong> - Connected to live LHDN MyInvois system.
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">MyInvois API Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="id_is_active">Enable E-Invoicing</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Environment</label>
+                                {{ form.environment }}
+                            </div>
+                        </div>
+
+                        <h6 class="text-muted mb-3">API Credentials</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Client ID</label>
+                                {{ form.client_id }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Client Secret</label>
+                                {{ form.client_secret }}
+                                <small class="text-muted">Leave empty to keep existing</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Taxpayer TIN</label>
+                                {{ form.taxpayer_tin }}
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="text-muted mb-3">Clinic/Supplier Information</h6>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Clinic Name</label>
+                                {{ form.clinic_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Business Registration Number (BRN)</label>
+                                {{ form.clinic_brn }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Address Line 1</label>
+                                {{ form.clinic_address_line1 }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Address Line 2</label>
+                                {{ form.clinic_address_line2 }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">City</label>
+                                {{ form.clinic_city }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">State</label>
+                                {{ form.clinic_state }}
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Postcode</label>
+                                {{ form.clinic_postcode }}
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">Country</label>
+                                {{ form.clinic_country }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone</label>
+                                {{ form.clinic_phone }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                {{ form.clinic_email }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Configuration
+                            </button>
+                            <form method="post" action="{% url 'einvoice:authenticate' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-success">
+                                    <i class="bi bi-key"></i> Test Authentication
+                                </button>
+                            </form>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Setup Instructions</h6>
+                </div>
+                <div class="card-body">
+                    <ol class="small">
+                        <li class="mb-2">Register on <strong>MyTax Portal</strong> (mytax.hasil.gov.my)</li>
+                        <li class="mb-2">Access <strong>MyInvois Portal</strong> and register your ERP system</li>
+                        <li class="mb-2">Obtain <strong>Client ID</strong> and <strong>Client Secret</strong> for sandbox/production</li>
+                        <li class="mb-2">Enter your clinic's <strong>TIN</strong> and <strong>BRN</strong></li>
+                        <li class="mb-2">Test authentication before going live</li>
+                    </ol>
+                    <hr>
+                    <p class="small text-muted mb-0">
+                        <i class="bi bi-link-45deg"></i>
+                        Documentation: <a href="https://sdk.myinvois.hasil.gov.my" target="_blank">sdk.myinvois.hasil.gov.my</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">API Endpoints</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">
+                        <strong>Sandbox:</strong><br>
+                        <code class="small">preprod-api.myinvois.hasil.gov.my</code>
+                    </p>
+                    <p class="small mb-0">
+                        <strong>Production:</strong><br>
+                        <code class="small">api.myinvois.hasil.gov.my</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

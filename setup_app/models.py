@@ -134,6 +134,8 @@ class Fee(models.Model):
 class Panel(models.Model):
     company_name = models.CharField(max_length=200)
     panel_code = models.CharField(max_length=50, unique=True)
+    tin = models.CharField(max_length=50, blank=True, help_text="Tax Identification Number for e-invoicing")
+    brn = models.CharField(max_length=50, blank=True, help_text="Business Registration Number")
     address = models.TextField(blank=True)
     contact_person = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)

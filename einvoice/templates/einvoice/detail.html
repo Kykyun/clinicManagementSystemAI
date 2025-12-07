@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}E-Invoice: {{ document.internal_id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if config.environment == 'sandbox' %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>SANDBOX MODE</strong> - This document is for testing only.
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-file-earmark-text"></i>
+            {{ document.internal_id }}
+            {% if document.status == 'pending' %}
+            <span class="badge bg-warning">Pending</span>
+            {% elif document.status == 'submitted' %}
+            <span class="badge bg-info">Submitted</span>
+            {% elif document.status == 'valid' %}
+            <span class="badge bg-success">Valid</span>
+            {% elif document.status == 'invalid' %}
+            <span class="badge bg-danger">Invalid</span>
+            {% elif document.status == 'rejected' %}
+            <span class="badge bg-danger">Rejected</span>
+            {% elif document.status == 'cancelled' %}
+            <span class="badge bg-secondary">Cancelled</span>
+            {% endif %}
+        </h2>
+        <a href="{% url 'einvoice:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Document Details</h5>
+                    <div>
+                        {% if document.can_resubmit %}
+                        <a href="{% url 'einvoice:submit' document.pk %}" class="btn btn-success btn-sm" onclick="return confirm('Submit this document to MyInvois?')">
+                            <i class="bi bi-send"></i> Submit to MyInvois
+                        </a>
+                        {% endif %}
+                        {% if document.myinvois_uuid %}
+                        <a href="{% url 'einvoice:check_status' document.pk %}" class="btn btn-info btn-sm">
+                            <i class="bi bi-arrow-repeat"></i> Refresh Status
+                        </a>
+                        {% endif %}
+                        {% if document.can_cancel %}
+                        <a href="{% url 'einvoice:cancel' document.pk %}" class="btn btn-danger btn-sm">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">Internal ID</th>
+                                    <td>{{ document.internal_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Document Type</th>
+                                    <td>{{ document.get_document_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{{ document.get_status_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Environment</th>
+                                    <td>
+                                        <span class="badge {% if document.environment == 'production' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ document.environment|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Currency</th>
+                                    <td>{{ document.currency }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th width="40%">MyInvois UUID</th>
+                                    <td>
+                                        {% if document.myinvois_uuid %}
+                                        <code class="small">{{ document.myinvois_uuid }}</code>
+                                        {% else %}
+                                        <span class="text-muted">Not submitted</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Submission ID</th>
+                                    <td>
+                                        {% if document.submission_uid %}
+                                        <code class="small">{{ document.submission_uid }}</code>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Long ID</th>
+                                    <td>
+                                        {% if document.long_id %}
+                                        <code class="small">{{ document.long_id|truncatechars:30 }}</code>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>{{ document.created_at|date:"d M Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Submitted</th>
+                                    <td>{{ document.submitted_at|date:"d M Y H:i"|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Buyer Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ document.buyer_name }}</p>
+                            <p><strong>TIN:</strong> {{ document.buyer_tin|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Amount:</strong> RM {{ document.total_amount|floatformat:2 }}</p>
+                            <p><strong>Tax Amount:</strong> RM {{ document.tax_amount|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if document.invoice %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Linked Invoice</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Invoice Number:</strong>
+                        <a href="{% url 'finance:invoice_detail' document.invoice.pk %}">{{ document.invoice.invoice_number }}</a>
+                    </p>
+                    <p><strong>Patient:</strong> {{ document.invoice.patient.full_name }}</p>
+                    <p><strong>Total:</strong> RM {{ document.invoice.total_amount|floatformat:2 }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if document.validation_errors %}
+            <div class="card mb-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Validation Errors</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="small mb-0">{{ document.validation_errors|safe }}</pre>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if document.payload_json %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <h5 class="mb-0">Payload JSON</h5>
+                    <a href="{% url 'einvoice:view_payload' document.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-code"></i> View Full Payload
+                    </a>
+                </div>
+                <div class="card-body">
+                    <pre class="small mb-0" style="max-height: 200px; overflow: auto;">{{ document.payload_json }}</pre>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-plus-circle text-primary"></i>
+                            <strong>Created:</strong> {{ document.created_at|date:"d M Y H:i" }}
+                            {% if document.created_by %}<br><small class="text-muted">by {{ document.created_by.get_full_name }}</small>{% endif %}
+                        </li>
+                        {% if document.submitted_at %}
+                        <li class="mb-2">
+                            <i class="bi bi-send text-info"></i>
+                            <strong>Submitted:</strong> {{ document.submitted_at|date:"d M Y H:i" }}
+                        </li>
+                        {% endif %}
+                        {% if document.validated_at %}
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Validated:</strong> {{ document.validated_at|date:"d M Y H:i" }}
+                        </li>
+                        {% endif %}
+                        {% if document.cancelled_at %}
+                        <li class="mb-2">
+                            <i class="bi bi-x-circle text-danger"></i>
+                            <strong>Cancelled:</strong> {{ document.cancelled_at|date:"d M Y H:i" }}
+                            {% if document.cancellation_reason %}<br><small class="text-muted">{{ document.cancellation_reason }}</small>{% endif %}
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5 class="mb-0">Activity Log</h5>
+                    <a href="{% url 'einvoice:logs' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for log in logs %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    {% if log.is_success %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                    {% endif %}
+                                    {{ log.get_action_display }}
+                                </span>
+                                <small class="text-muted">{{ log.created_at|date:"d M H:i" }}</small>
+                            </div>
+                            {% if log.error_message %}
+                            <small class="text-danger">{{ log.error_message|truncatechars:50 }}</small>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted text-center">No activity logs</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

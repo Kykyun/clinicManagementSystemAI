@@ -10,4 +10,5 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "python-dateutil>=2.9.0.post0",
     "reportlab>=4.4.5",
+    "requests>=2.32.5",
 ]

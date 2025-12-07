@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Validate TIN{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if config.environment == 'sandbox' %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <strong>SANDBOX MODE</strong> - Validation results are from the test environment.
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-check-circle"></i> Validate TIN</h2>
+        <a href="{% url 'einvoice:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to E-Invoices
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">TIN Validation</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Validate a taxpayer's TIN before issuing an e-invoice.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Tax Identification Number (TIN)</label>
+                            {{ form.tin }}
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">ID Type</label>
+                                {{ form.id_type }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">ID Value (Optional)</label>
+                                {{ form.id_value }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Validate TIN
+                        </button>
+                    </form>
+
+                    {% if result %}
+                    <hr>
+                    <div class="alert {% if result.success %}alert-success{% else %}alert-danger{% endif %}">
+                        <h6>
+                            {% if result.success %}
+                            <i class="bi bi-check-circle-fill"></i> Valid TIN
+                            {% else %}
+                            <i class="bi bi-x-circle-fill"></i> Invalid TIN
+                            {% endif %}
+                        </h6>
+                        <p class="mb-0">
+                            <strong>TIN:</strong> {{ result.tin }}<br>
+                            {% if result.taxpayer_name %}
+                            <strong>Name:</strong> {{ result.taxpayer_name }}<br>
+                            {% endif %}
+                            <strong>Result:</strong> {{ result.message }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Validations</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>TIN</th>
+                                <th>ID Type</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in validations %}
+                            <tr>
+                                <td>{{ v.tin }}</td>
+                                <td>{{ v.id_type }}</td>
+                                <td>{{ v.taxpayer_name|default:"-" }}</td>
+                                <td>
+                                    {% if v.is_valid %}
+                                    <span class="badge bg-success">Valid</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Invalid</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ v.validated_at|date:"d M Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No validations yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

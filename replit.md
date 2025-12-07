@@ -18,13 +18,14 @@ Preferred communication style: Simple, everyday language.
 **Design Decision**: Django was chosen for its built-in admin interface, ORM capabilities, robust authentication system, and rapid development features. The framework provides excellent support for role-based access control and form handling, which are critical for a healthcare management system.
 
 ### Application Structure
-The system is organized into five main Django apps:
+The system is organized into six main Django apps:
 
 1. **accounts** - User authentication, staff management, role-based permissions
 2. **patients** - Patient records, visits, consultations, prescriptions, appointments
 3. **finance** - Invoicing, payments, suppliers, stock orders, panel claims
 4. **management_app** - Dashboard, settings, attendance, queue management, reporting
 5. **setup_app** - Master data (medicines, lab tests, allergies, fees, panels)
+6. **einvoice** - LHDN MyInvois e-invoicing integration for Malaysia tax compliance
 
 **Design Decision**: Modular app structure allows for better code organization, easier maintenance, and potential for reusability. Each app handles a distinct domain area with minimal coupling.
 
@@ -137,7 +138,16 @@ The system is organized into five main Django apps:
 - **ALLOWED_HOSTS**: Optional comma-separated host list (defaults to Replit domains)
 
 ### Third-Party Services
-None currently integrated, but the architecture supports:
+
+**LHDN MyInvois Integration (E-Invoicing)**:
+- Full integration with Malaysia's LHDN MyInvois API for e-invoicing compliance
+- OAuth2 authentication with token caching
+- Submit, validate, cancel, and query e-invoices
+- TIN (Tax Identification Number) validation
+- Sandbox and Production environment support
+- Requires: MYINVOIS_CLIENT_ID, MYINVOIS_CLIENT_SECRET via configuration
+
+Other integrations supported:
 - Email services (for notifications, password reset)
 - SMS gateways (for appointment reminders)
 - Payment gateways (for online payments)

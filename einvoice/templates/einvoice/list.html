@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}E-Invoice Documents{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if config.environment == 'sandbox' %}
+    <div class="alert alert-warning d-flex align-items-center mb-3">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>SANDBOX MODE</strong> - Documents are for testing only, not valid for tax purposes.
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-text"></i> E-Invoice Documents</h2>
+        <div>
+            <a href="{% url 'einvoice:config' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-gear"></i> Configuration
+            </a>
+            <a href="{% url 'einvoice:validate_tin' %}" class="btn btn-outline-primary">
+                <i class="bi bi-check-circle"></i> Validate TIN
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-bg-secondary">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total|default:0 }}</h3>
+                    <small>Total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-warning">
+                <div class="card-body text-center">
+                    <h3>{{ stats.pending|default:0 }}</h3>
+                    <small>Pending</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-info">
+                <div class="card-body text-center">
+                    <h3>{{ stats.submitted|default:0 }}</h3>
+                    <small>Submitted</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-success">
+                <div class="card-body text-center">
+                    <h3>{{ stats.valid|default:0 }}</h3>
+                    <small>Valid</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-danger">
+                <div class="card-body text-center">
+                    <h3>{{ stats.invalid|default:0|add:stats.rejected|default:0 }}</h3>
+                    <small>Failed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-bg-dark">
+                <div class="card-body text-center">
+                    <h3>RM {{ stats.total_amount|floatformat:2|default:"0.00" }}</h3>
+                    <small>Valid Amount</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search ID, buyer, TIN..." value="{{ search }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                    <a href="{% url 'einvoice:list' %}" class="btn btn-outline-secondary">Clear</a>
+                </div>
+                <div class="col-md-2 text-end">
+                    <form method="post" action="{% url 'einvoice:sync_all_status' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-info">
+                            <i class="bi bi-arrow-repeat"></i> Sync Status
+                        </button>
+                    </form>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Document ID</th>
+                        <th>Type</th>
+                        <th>Buyer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>MyInvois UUID</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'einvoice:detail' doc.pk %}">{{ doc.internal_id }}</a>
+                        </td>
+                        <td>{{ doc.get_document_type_display }}</td>
+                        <td>
+                            {{ doc.buyer_name|truncatechars:30 }}
+                            {% if doc.buyer_tin %}<br><small class="text-muted">{{ doc.buyer_tin }}</small>{% endif %}
+                        </td>
+                        <td>RM {{ doc.total_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if doc.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif doc.status == 'submitted' %}
+                            <span class="badge bg-info">Submitted</span>
+                            {% elif doc.status == 'valid' %}
+                            <span class="badge bg-success">Valid</span>
+                            {% elif doc.status == 'invalid' %}
+                            <span class="badge bg-danger">Invalid</span>
+                            {% elif doc.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% elif doc.status == 'cancelled' %}
+                            <span class="badge bg-secondary">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if doc.myinvois_uuid %}
+                            <small class="text-muted">{{ doc.myinvois_uuid|truncatechars:20 }}</small>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ doc.created_at|date:"d M Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'einvoice:detail' doc.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if doc.can_resubmit %}
+                            <a href="{% url 'einvoice:submit' doc.pk %}" class="btn btn-sm btn-success" onclick="return confirm('Submit this document to MyInvois?')">
+                                <i class="bi bi-send"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">No e-invoice documents found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if documents.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if documents.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ documents.previous_page_number }}&status={{ status_filter }}&search={{ search }}">Previous</a>
+            </li>
+            {% endif %}
+            <li class="page-item disabled">
+                <span class="page-link">Page {{ documents.number }} of {{ documents.paginator.num_pages }}</span>
+            </li>
+            {% if documents.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ documents.next_page_number }}&status={{ status_filter }}&search={{ search }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

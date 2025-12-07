@@ -124,6 +124,40 @@
             </div>
         </div>
         {% endif %}
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-file-earmark-text"></i> E-Invoice (MyInvois)
+            </div>
+            <div class="card-body">
+                {% if invoice.einvoice_documents.exists %}
+                    {% with einvoice=invoice.einvoice_documents.first %}
+                    <p class="mb-2">
+                        <strong>Status:</strong>
+                        {% if einvoice.status == 'pending' %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% elif einvoice.status == 'submitted' %}
+                        <span class="badge bg-info">Submitted</span>
+                        {% elif einvoice.status == 'valid' %}
+                        <span class="badge bg-success">Valid</span>
+                        {% elif einvoice.status == 'invalid' or einvoice.status == 'rejected' %}
+                        <span class="badge bg-danger">{{ einvoice.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ einvoice.get_status_display }}</span>
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'einvoice:detail' einvoice.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-eye"></i> View E-Invoice
+                    </a>
+                    {% endwith %}
+                {% else %}
+                <p class="text-muted small mb-2">No e-invoice generated yet.</p>
+                <a href="{% url 'einvoice:create_from_invoice' invoice.pk %}" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-plus-circle"></i> Generate E-Invoice
+                </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

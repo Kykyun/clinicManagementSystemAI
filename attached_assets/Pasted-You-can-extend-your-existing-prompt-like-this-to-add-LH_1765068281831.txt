@@ -1,0 +1,204 @@
+You can extend your existing prompt like this to add **LHDN MyTax / MyInvois e-invoicing integration**.
+
+You don’t need to rewrite everything from scratch — just **add this whole block** under the *FINANCE MODULE* (and Deliverables) in the previous AI prompt.
+
+---
+
+## 🔄 E-INVOICING (LHDN MyTax / MyInvois Integration – Malaysia)
+
+Enhance the **Finance Module** with a full **e-Invoicing workflow** that integrates with **LHDN’s MyInvois System** via API (MyTax portal backend), according to the official SDK and API docs. ([sdk.myinvois.hasil.gov.my][1])
+
+### A. General Integration Requirements
+
+* Follow **LHDN MyInvois SDK & API documentation**:
+
+  * Use the official **MyInvois SDK & API** for:
+
+    * Authentication (`Login as Taxpayer System` / `Login as Intermediary System`).
+    * Getting document types & versions.
+    * Submitting, querying, and cancelling e-Invoices. ([sdk.myinvois.hasil.gov.my][2])
+* Use **environment variables/config** for:
+
+  * `MYINVOIS_CLIENT_ID`
+  * `MYINVOIS_CLIENT_SECRET`
+  * `MYINVOIS_TAXPAYER_TIN`
+  * `MYINVOIS_ENV` (e.g. `sandbox` / `production`)
+  * API base URLs for sandbox & production.
+* Implement a dedicated integration layer, e.g. `einvoice/` app or module:
+
+  * `services.py` for calling MyInvois APIs.
+  * `models.py` for local e-invoice metadata (status, UUID, submission ID, etc.).
+  * `tasks` for async retries / polling (if using Celery or similar).
+
+### B. E-Invoice Lifecycle (Clinic System ↔ MyInvois)
+
+1. **Invoice Creation (Payment / Credit Payment / Panel Claim)**
+
+   * When clinic issues:
+
+     * **Patient payment invoice** (outpatient, procedures, packages).
+     * **Credit invoice** (Credit Payment).
+     * **Panel invoice** (Panel Claim).
+   * System must:
+
+     * Generate a local **Invoice** record (clinic internal ID).
+     * Map the invoice data to **MyInvois e-Invoice structure** (UBL JSON as per `Invoice v1.x` spec). ([sdk.myinvois.hasil.gov.my][3])
+     * Include:
+
+       * Supplier (clinic) details – TIN, BRN, address.
+       * Buyer details – patient or panel (with TIN if required).
+       * Line items – medicines, services, fees, quantities, unit price, tax.
+       * Totals – subtotal, tax, grand total, currency, payment terms.
+
+2. **TIN Validation & Taxpayer Search (Optional but Recommended)**
+
+   * When entering **buyer TIN** (for panels or businesses):
+
+     * Use **Validate/Search Taxpayer’s TIN API** to confirm validity before issuing the invoice. ([sdk.myinvois.hasil.gov.my][4])
+   * UI:
+
+     * Show validation result (valid/invalid).
+     * Prevent e-Invoice submission if TIN is invalid.
+
+3. **Authentication with MyInvois**
+
+   * Implement functions:
+
+     * `login_as_taxpayer()` and/or `login_as_intermediary()` using the MyInvois **Login** APIs to obtain OAuth2/Access Tokens. ([sdk.myinvois.hasil.gov.my][2])
+   * Cache tokens until expiry; refresh automatically.
+   * Store **no secrets in code** – only environment variables.
+
+4. **Submit e-Invoice to MyInvois**
+
+   * Implement `submit_einvoice(invoice_id)`:
+
+     * Build the JSON payload according to **Invoice v1.x** structure.
+     * (If required) Apply digital signature according to MyInvois signature guidelines, or follow the appropriate version rules as per SDK. ([sdk.myinvois.hasil.gov.my][3])
+     * Call **Submit Documents** API to send the invoice. ([sdk.myinvois.hasil.gov.my][4])
+   * Store response:
+
+     * MyInvois **document UUID**.
+     * **Submission ID**.
+     * Initial status (e.g. `Pending`, `Valid`, `Rejected`).
+   * UI:
+
+     * Show e-Invoice status badge next to each clinic invoice (Not Sent / Submitted / Valid / Rejected / Cancelled).
+
+5. **Get Status & Details**
+
+   * Implement functions:
+
+     * `get_document_status(uuid)` (MyInvois **Get Document / Get Document Details**). ([sdk.myinvois.hasil.gov.my][4])
+     * `search_documents(filters)` (MyInvois **Search Documents / Get Recent Documents**).
+   * Use these to:
+
+     * Update local invoice record with latest validation status.
+     * Display full MyInvois response (errors, warnings) for rejected documents.
+   * Optionally allow a “Sync Status” button plus scheduled background sync.
+
+6. **Cancel / Reject e-Invoice**
+
+   * Implement:
+
+     * `cancel_einvoice(uuid, reason)` calling MyInvois **Cancel Document** API for allowed scenarios. ([sdk.myinvois.hasil.gov.my][4])
+   * Reflect cancellation back to:
+
+     * Finance ledger (reverse ledger entries).
+     * Patient / Panel statements.
+   * Handle buyer-initiated rejection using relevant MyInvois APIs (`Reject Document` / cancellation workflow).
+
+7. **Document Retrieval & Storage**
+
+   * Provide button **“View e-Invoice (MyInvois)”**:
+
+     * Fetch invoice JSON/XML via **Get Document / Get Document Details**.
+     * Render a human-readable invoice layout on the clinic system.
+   * Store:
+
+     * A local copy of e-Invoice JSON (for audit) or at least the essential fields & MyInvois UUID.
+   * Note: printing behaviour must respect MyInvois guidance (e.g. some print functions differ for API vs portal submissions). ([sdk.myinvois.hasil.gov.my][5])
+
+8. **Sandbox vs Production**
+
+   * Add configuration to:
+
+     * Use **Sandbox endpoints** for testing (MyInvois testing environment). ([sme-chi-staging][6])
+     * Use **Production endpoints** for live transactions.
+   * In UI, clearly label environment (e.g. a banner “SANDBOX MODE – NOT FOR REAL TAX USE”).
+
+### C. UI/Workflow Integration Points
+
+* **Payment screen (Patient visit)**
+
+  * After saving payment:
+
+    * Option to “Generate & Submit e-Invoice”.
+    * Show response and status immediately.
+* **Credit Payment / Panel Claim**
+
+  * When generating invoices to panels:
+
+    * Batch “Generate & Submit e-Invoice” for multiple invoices.
+    * Show per-invoice status and MyInvois UUID.
+* **EOD & Reports**
+
+  * Summaries should distinguish:
+
+    * Total invoices.
+    * Number/amount successfully e-invoiced (Valid).
+    * Pending/rejected e-Invoices.
+
+### D. Compliance & Error Handling
+
+* Follow the latest **IRBM e-Invoice Guidelines & FAQ** for data requirements, field formats, and implementation timelines. ([Hasil][7])
+* Implement robust error handling:
+
+  * Log request ID, MyInvois error codes/messages.
+  * Show user-friendly explanation but keep raw code in logs for developers.
+* Allow resubmission after correction where permitted by LHDN rules.
+
+---
+
+## 📦 Extra Deliverables for E-Invoicing
+
+Add these items to your overall project deliverables in the prompt:
+
+1. **E-Invoicing Config & Models**
+
+   * Django/Flask models for:
+
+     * `EInvoiceDocument` (link to local invoice, MyInvois UUID, submission ID, status, environment).
+   * Settings structure for MyInvois credentials and endpoints.
+
+2. **Integration Service Layer**
+
+   * Clear example code for:
+
+     * Authenticating to MyInvois.
+     * Submitting an invoice.
+     * Fetching status & cancelling.
+   * Written in a way that is easy to unit-test (mock API responses).
+
+3. **Setup Instructions**
+
+   * How to:
+
+     * Register on **MyTax / MyInvois portal**.
+     * Register ERP to get **Client ID & Client Secret** for sandbox and production. ([E Stream MSC][8])
+     * Configure environment variables in the clinic system.
+   * Mention that exact registration steps are performed manually on MyTax/MyInvois; the clinic system only uses the resulting API credentials.
+
+---
+
+You can now plug this whole e-invoicing section into your previous AI prompt (inside/after the **Finance Module** section and in **Deliverables**).
+
+If you tell me whether you’re using **Django or Flask**, I can also sketch a small sample: e.g. a `submit_einvoice` service and a Django view that calls the MyInvois API.
+
+[1]: https://sdk.myinvois.hasil.gov.my/?utm_source=chatgpt.com "Software Development Kit (SDK) for Lembaga Hasil Dalam ..."
+[2]: https://sdk.myinvois.hasil.gov.my/api/?utm_source=chatgpt.com "Application Programming Interface (API)"
+[3]: https://sdk.myinvois.hasil.gov.my/documents/invoice-v1-0/?utm_source=chatgpt.com "Invoice v1.0"
+[4]: https://sdk.myinvois.hasil.gov.my/einvoicingapi/?utm_source=chatgpt.com "e-Invoice APIs"
+[5]: https://sdk.myinvois.hasil.gov.my/faq/?utm_source=chatgpt.com "Frequently Asked Questions"
+[6]: https://jomeinvoice.my/issue-e-invoice-with-myinvois-portal-testing-environment/?utm_source=chatgpt.com "How to Issue an e-invoice with MyInvois Portal Testing ..."
+[7]: https://www.hasil.gov.my/media/fzagbaj2/irbm-e-invoice-guideline.pdf?utm_source=chatgpt.com "e-invoice guideline inland revenue board of malaysia"
+[8]: https://www.sql.com.my/how-to-register-e-invoice/?utm_source=chatgpt.com "2024 LHDN E-Invoice Malaysia | Simple Steps to Register ..."

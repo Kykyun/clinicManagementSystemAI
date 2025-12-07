@@ -100,11 +100,13 @@ class FeeForm(forms.ModelForm):
 class PanelForm(forms.ModelForm):
     class Meta:
         model = Panel
-        fields = ['company_name', 'panel_code', 'address', 'contact_person',
+        fields = ['company_name', 'panel_code', 'tin', 'brn', 'address', 'contact_person',
                   'phone', 'email', 'billing_terms', 'credit_limit', 'is_active']
         widgets = {
             'company_name': forms.TextInput(attrs={'class': 'form-control'}),
             'panel_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'tin': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tax Identification Number'}),
+            'brn': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Business Registration Number'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'contact_person': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
