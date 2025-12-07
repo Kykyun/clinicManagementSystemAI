@@ -80,6 +80,63 @@
                 <td class="text-end"><strong>${{ report.total_revenue|floatformat:2 }}</strong></td>
             </tr>
         </table>
+        
+        <hr class="my-4">
+        
+        <h5><i class="bi bi-receipt"></i> E-Invoice Statistics</h5>
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="card border-secondary">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">{{ einvoice_stats.total|default:0 }}</h4>
+                        <small class="text-muted">Total Documents</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0 text-success">{{ einvoice_stats.valid|default:0 }}</h4>
+                        <small class="text-muted">Valid</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0 text-warning">{{ einvoice_stats.pending|default:0 }}</h4>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-danger">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0 text-danger">{{ einvoice_stats.rejected|default:0 }}</h4>
+                        <small class="text-muted">Rejected</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <table class="table table-sm">
+            <tr>
+                <td>Submitted</td>
+                <td class="text-end">{{ einvoice_stats.submitted|default:0 }}</td>
+            </tr>
+            <tr>
+                <td>Invalid</td>
+                <td class="text-end">{{ einvoice_stats.invalid|default:0 }}</td>
+            </tr>
+            <tr>
+                <td>Cancelled</td>
+                <td class="text-end">{{ einvoice_stats.cancelled|default:0 }}</td>
+            </tr>
+            <tr class="table-success">
+                <td><strong>Valid E-Invoice Amount</strong></td>
+                <td class="text-end"><strong>${{ einvoice_stats.total_amount|floatformat:2|default:"0.00" }}</strong></td>
+            </tr>
+        </table>
     </div>
 </div>
 {% endblock %}

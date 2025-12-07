@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from django.http import HttpResponse
 from datetime import datetime, timedelta
@@ -11,6 +11,7 @@ from .forms import InvoiceForm, InvoiceItemForm, PaymentForm, SupplierForm, Stoc
 from patients.models import Visit
 from setup_app.models import Panel
 from accounts.decorators import finance_access_required, admin_or_hq_required
+from einvoice.models import EInvoiceDocument
 
 
 def generate_invoice_number():
@@ -265,7 +266,24 @@ def eod_report(request):
         )
         report.total_revenue = report.total_cash + report.total_card + report.total_ewallet + report.total_credit
     
-    return render(request, 'finance/eod_report.html', {'report': report, 'report_date': report_date})
+    einvoice_stats = EInvoiceDocument.objects.filter(
+        created_at__date=report_date
+    ).aggregate(
+        total=Count('id'),
+        pending=Count('id', filter=Q(status='pending')),
+        submitted=Count('id', filter=Q(status='submitted')),
+        valid=Count('id', filter=Q(status='valid')),
+        invalid=Count('id', filter=Q(status='invalid')),
+        rejected=Count('id', filter=Q(status='rejected')),
+        cancelled=Count('id', filter=Q(status='cancelled')),
+        total_amount=Sum('total_amount', filter=Q(status='valid'))
+    )
+    
+    return render(request, 'finance/eod_report.html', {
+        'report': report,
+        'report_date': report_date,
+        'einvoice_stats': einvoice_stats,
+    })
 
 
 @login_required
