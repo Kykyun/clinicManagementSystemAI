@@ -32,6 +32,29 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'form': form})
 
 
+def forgot_password_view(request):
+    if request.user.is_authenticated:
+        return redirect('management_app:dashboard')
+    
+    success = False
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if email:
+            user = User.objects.filter(email=email).first()
+            if user:
+                AuditLog.objects.create(
+                    user=None,
+                    action='password_reset_request',
+                    model_name='User',
+                    object_id=str(user.id),
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    changes=f'Password reset requested for {email}'
+                )
+            success = True
+    
+    return render(request, 'accounts/forgot_password.html', {'success': success})
+
+
 @login_required
 def logout_view(request):
     AuditLog.objects.create(
