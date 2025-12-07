@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from datetime import date, datetime
 import re
-from .models import Patient, Visit, Consultation, Prescription, Appointment, LabResult, Immunization
+from .models import Patient, Visit, Consultation, Prescription, Appointment, LabResult, Immunization, Triage
 
 
 def validate_nric(value):
@@ -106,13 +106,48 @@ class PatientForm(forms.ModelForm):
 class VisitForm(forms.ModelForm):
     class Meta:
         model = Visit
-        fields = ['patient', 'doctor', 'visit_type', 'visit_date', 'reason']
+        fields = ['patient', 'doctor', 'visit_type', 'payer_type', 'visit_date', 'reason']
         widgets = {
             'patient': forms.Select(attrs={'class': 'form-select'}),
             'doctor': forms.Select(attrs={'class': 'form-select'}),
             'visit_type': forms.Select(attrs={'class': 'form-select'}),
+            'payer_type': forms.Select(attrs={'class': 'form-select'}),
             'visit_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+
+class CheckInForm(forms.ModelForm):
+    class Meta:
+        model = Visit
+        fields = ['doctor', 'visit_type', 'payer_type', 'reason']
+        widgets = {
+            'doctor': forms.Select(attrs={'class': 'form-select'}),
+            'visit_type': forms.Select(attrs={'class': 'form-select'}),
+            'payer_type': forms.Select(attrs={'class': 'form-select'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Reason for visit'}),
+        }
+
+
+class TriageForm(forms.ModelForm):
+    class Meta:
+        model = Triage
+        fields = ['bp_systolic', 'bp_diastolic', 'heart_rate', 'temperature', 
+                  'weight', 'height', 'spo2', 'pain_score', 'notes',
+                  'allergy_flag', 'infection_risk', 'fall_risk']
+        widgets = {
+            'bp_systolic': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Systolic', 'min': '60', 'max': '250'}),
+            'bp_diastolic': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Diastolic', 'min': '40', 'max': '150'}),
+            'heart_rate': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'bpm', 'min': '30', 'max': '250'}),
+            'temperature': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '°C', 'step': '0.1', 'min': '35', 'max': '42'}),
+            'weight': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'kg', 'step': '0.1', 'min': '1', 'max': '300'}),
+            'height': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'cm', 'step': '0.1', 'min': '30', 'max': '250'}),
+            'spo2': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '%', 'min': '50', 'max': '100'}),
+            'pain_score': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0-10', 'min': '0', 'max': '10'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Triage notes...'}),
+            'allergy_flag': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'infection_risk': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'fall_risk': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 

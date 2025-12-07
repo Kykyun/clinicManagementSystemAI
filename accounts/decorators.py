@@ -49,3 +49,13 @@ def doctor_required(view_func):
 def reception_or_higher(view_func):
     """Decorator for reception, nurse, doctor, admin, and HQ staff."""
     return role_required('admin', 'doctor', 'nurse', 'receptionist', 'hq_staff')(view_func)
+
+
+def nurse_required(view_func):
+    """Decorator to restrict view access to nurses and admin only."""
+    return role_required('admin', 'nurse')(view_func)
+
+
+def pharmacy_required(view_func):
+    """Decorator to restrict view access to pharmacy, nurse, doctor, and admin."""
+    return role_required('admin', 'doctor', 'nurse', 'pharmacy')(view_func)

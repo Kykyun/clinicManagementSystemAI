@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="30">
+    <title>Queue Display</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2A7DE1;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #0EA5E9;
+            --secondary: #64748B;
+        }
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .header .date {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        .queue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 0 2rem 2rem;
+        }
+        .queue-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+        .queue-card:hover {
+            transform: translateY(-4px);
+        }
+        .queue-number {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .patient-initials {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-waiting_triage { background: var(--warning); color: #000; }
+        .status-waiting_doctor { background: var(--info); }
+        .status-in_consultation { background: var(--primary); }
+        .status-to_pharmacy { background: var(--secondary); }
+        .status-to_lab { background: var(--secondary); }
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            opacity: 0.6;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .clock {
+            font-size: 2rem;
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+    <div class="header d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-hospital me-2"></i>Queue Display</h1>
+            <span class="date">{{ today|date:"l, F d, Y" }}</span>
+        </div>
+        <div class="clock" id="clock"></div>
+    </div>
+    
+    {% if queue_items %}
+    <div class="queue-grid">
+        {% for item in queue_items %}
+        <div class="queue-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="queue-number">{{ item.queue_number }}</div>
+                <div class="patient-initials">{{ item.initials }}</div>
+            </div>
+            <div class="mb-2">
+                <small class="opacity-75">Doctor</small>
+                <div>{{ item.doctor }}</div>
+            </div>
+            {% if item.room != '-' %}
+            <div class="mb-3">
+                <small class="opacity-75">Room</small>
+                <div>{{ item.room }}</div>
+            </div>
+            {% endif %}
+            <span class="status-badge status-{{ item.status_class }}">
+                {{ item.status }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h2>No Active Queue</h2>
+        <p>Patients will appear here when checked in</p>
+    </div>
+    {% endif %}
+    
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock').textContent = time;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

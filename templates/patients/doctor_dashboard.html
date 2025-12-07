@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Doctor Dashboard</h1>
+        <p class="text-secondary">{{ today|date:"l, F d, Y" }}</p>
+    </div>
+    <div>
+        <form method="get" class="d-flex gap-2">
+            <select name="doctor" class="form-select" onchange="this.form.submit()">
+                <option value="">All Doctors</option>
+                {% for doc in doctors %}
+                <option value="{{ doc.id }}" {% if doctor_filter == doc.id|stringformat:"i" %}selected{% endif %}>
+                    Dr. {{ doc.get_full_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card stat-card border-start border-info border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-info-subtle text-info">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="stat-value mb-0">{{ waiting_count }}</h3>
+                        <p class="stat-label text-secondary mb-0">Waiting for Consultation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stat-card border-start border-primary border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-clipboard2-pulse"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="stat-value mb-0">{{ in_consultation_count }}</h3>
+                        <p class="stat-label text-secondary mb-0">In Consultation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0"><i class="bi bi-list-check me-2"></i>Patient Queue</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if visits %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Queue</th>
+                        <th>Patient</th>
+                        <th>Reason</th>
+                        <th>Vitals</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for visit in visits %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-dark fs-6">{{ visit.queue_number|default:"-" }}</span>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ visit.patient.full_name }}</strong>
+                                {% if visit.patient.allergies.exists %}
+                                <span class="badge bg-danger ms-1" title="Has allergies">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                            <small class="text-secondary">
+                                {{ visit.patient.gender|title }}, {{ visit.patient.age }} yrs
+                                | {{ visit.get_visit_type_display }}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="text-truncate d-inline-block" style="max-width: 200px;">
+                                {{ visit.reason|default:"-" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if visit.triage %}
+                            <small>
+                                BP: {{ visit.triage.bp_display }}<br>
+                                HR: {{ visit.triage.heart_rate|default:"-" }} bpm<br>
+                                Temp: {{ visit.triage.temperature|default:"-" }}°C
+                            </small>
+                            {% else %}
+                            <span class="text-secondary">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ visit.status_display_class }}">
+                                {{ visit.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            {% if visit.status == 'waiting_doctor' %}
+                            <a href="{% url 'patients:start_consultation' visit.id %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-play-circle me-1"></i>Start
+                            </a>
+                            {% elif visit.status == 'in_consultation' %}
+                            <a href="{% url 'patients:consultation_edit' visit.consultation.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i>Continue
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-secondary">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mt-2 mb-0">No patients in queue</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.stat-card { border-top: none; border-bottom: none; border-right: none; }
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.stat-value { font-size: 1.75rem; font-weight: 600; }
+.stat-label { font-size: 0.875rem; }
+</style>
+{% endblock %}

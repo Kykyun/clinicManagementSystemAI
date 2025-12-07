@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Dispense - {{ visit.patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'patients:pharmacy_dashboard' %}">Pharmacy</a></li>
+                <li class="breadcrumb-item active">Dispense</li>
+            </ol>
+        </nav>
+        <h1 class="page-title">Dispense Prescriptions</h1>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-person me-2"></i>Patient</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-dark fs-5 me-3">Q{{ visit.queue_number }}</span>
+                    <div>
+                        <h5 class="mb-0">{{ visit.patient.full_name }}</h5>
+                        <small class="text-secondary">{{ visit.patient.patient_id }}</small>
+                    </div>
+                </div>
+                
+                {% if visit.patient.allergies.exists %}
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Allergies:</strong>
+                    {% for allergy in visit.patient.allergies.all %}
+                    {{ allergy.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Visit Info</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-secondary">Doctor</small>
+                    <p class="mb-0">Dr. {{ visit.doctor.get_full_name|default:"N/A" }}</p>
+                </div>
+                <div class="mb-2">
+                    <small class="text-secondary">Diagnosis</small>
+                    <p class="mb-0">{{ visit.consultation.diagnosis|truncatechars:100 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-prescription2 me-2"></i>Prescriptions</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">
+                                        <input type="checkbox" class="form-check-input" id="selectAll">
+                                    </th>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Qty</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rx in prescriptions %}
+                                <tr class="{% if rx.is_dispensed %}table-success{% endif %}">
+                                    <td>
+                                        {% if not rx.is_dispensed %}
+                                        <input type="checkbox" class="form-check-input rx-checkbox" 
+                                               name="dispensed" value="{{ rx.id }}" checked>
+                                        {% else %}
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ rx.medicine.name }}</strong>
+                                        <br>
+                                        <small class="text-secondary">{{ rx.medicine.code }}</small>
+                                    </td>
+                                    <td>
+                                        {{ rx.dosage }}<br>
+                                        <small class="text-secondary">{{ rx.frequency }} for {{ rx.duration }}</small>
+                                        {% if rx.instructions %}
+                                        <br><small class="text-info">{{ rx.instructions }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ rx.quantity }}</strong></td>
+                                    <td>
+                                        {% if rx.medicine.stock_quantity < rx.quantity %}
+                                        <span class="text-danger fw-bold">{{ rx.medicine.stock_quantity }}</span>
+                                        <br><small class="text-danger">Insufficient!</small>
+                                        {% elif rx.medicine.stock_quantity <= rx.medicine.minimum_stock %}
+                                        <span class="text-warning">{{ rx.medicine.stock_quantity }}</span>
+                                        {% else %}
+                                        {{ rx.medicine.stock_quantity }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if rx.is_dispensed %}
+                                        <span class="badge bg-success">Dispensed</span>
+                                        <br>
+                                        <small class="text-secondary">{{ rx.dispensed_at|time:"H:i" }}</small>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if prescriptions.filter.is_dispensed|default:False %}
+                    {% else %}
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check2-square me-2"></i>Confirm Dispensed
+                        </button>
+                        <a href="{% url 'patients:pharmacy_dashboard' %}" class="btn btn-outline-secondary btn-lg">Back</a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.rx-checkbox');
+    
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            selectAll.checked = [...checkboxes].every(c => c.checked);
+        });
+    });
+});
+</script>
+{% endblock %}

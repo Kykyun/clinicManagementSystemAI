@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Pharmacy Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Pharmacy Dashboard</h1>
+        <p class="text-secondary">{{ today|date:"l, F d, Y" }}</p>
+    </div>
+    <div>
+        <a href="{% url 'setup_app:medicine_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-capsule"></i> Inventory
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-prescription2 text-primary me-2"></i>Pending Prescriptions
+                </h5>
+                <span class="badge bg-primary">{{ pending_prescriptions|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if pending_prescriptions %}
+                <div class="accordion accordion-flush" id="prescriptionsAccordion">
+                    {% for item in pending_prescriptions %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse{{ item.visit.id }}">
+                                <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                    <div>
+                                        <span class="badge bg-dark me-2">Q{{ item.visit.queue_number }}</span>
+                                        <strong>{{ item.visit.patient.full_name }}</strong>
+                                    </div>
+                                    <span class="badge bg-secondary">{{ item.total_items }} items</span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ item.visit.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                             data-bs-parent="#prescriptionsAccordion">
+                            <div class="accordion-body">
+                                <table class="table table-sm mb-3">
+                                    <thead>
+                                        <tr>
+                                            <th>Medicine</th>
+                                            <th>Dosage</th>
+                                            <th>Qty</th>
+                                            <th>Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rx in item.prescriptions %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ rx.medicine.name }}</strong>
+                                                <br>
+                                                <small class="text-secondary">{{ rx.frequency }} for {{ rx.duration }}</small>
+                                            </td>
+                                            <td>{{ rx.dosage }}</td>
+                                            <td>{{ rx.quantity }}</td>
+                                            <td>
+                                                {% if rx.medicine.stock_quantity <= rx.medicine.minimum_stock %}
+                                                <span class="text-danger">{{ rx.medicine.stock_quantity }}</span>
+                                                {% else %}
+                                                {{ rx.medicine.stock_quantity }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <a href="{% url 'patients:dispense_prescriptions' item.visit.id %}" class="btn btn-success">
+                                    <i class="bi bi-check2-square me-1"></i>Dispense
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="bi bi-check-circle fs-1 text-success"></i>
+                    <p class="mt-2 mb-0">No pending prescriptions</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning-subtle">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>Low Stock Alert
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if low_stock_medicines %}
+                <div class="list-group list-group-flush">
+                    {% for med in low_stock_medicines %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ med.name }}</strong>
+                            <br>
+                            <small class="text-secondary">{{ med.code }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-danger">{{ med.stock_quantity }}</span>
+                            <br>
+                            <small class="text-secondary">Min: {{ med.minimum_stock }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-secondary">
+                    <i class="bi bi-check-circle fs-1 text-success"></i>
+                    <p class="mt-2 mb-0">All stock levels OK</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

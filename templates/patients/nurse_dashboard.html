@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Nurse Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Nurse Dashboard</h1>
+        <p class="text-secondary">{{ today|date:"l, F d, Y" }}</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-hourglass-split text-warning me-2"></i>Waiting for Triage
+                </h5>
+                <span class="badge bg-warning text-dark">{{ waiting_triage.count }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if waiting_triage %}
+                <div class="list-group list-group-flush">
+                    {% for visit in waiting_triage %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-dark me-2">Q{{ visit.queue_number }}</span>
+                                    <strong>{{ visit.patient.full_name }}</strong>
+                                </div>
+                                <small class="text-secondary">
+                                    {{ visit.patient.gender|title }}, {{ visit.patient.age }} yrs
+                                    {% if visit.patient.allergies.exists %}
+                                    <span class="badge bg-danger ms-2">Allergies</span>
+                                    {% endif %}
+                                </small>
+                                <br>
+                                <small class="text-secondary">
+                                    <i class="bi bi-clock me-1"></i>{{ visit.visit_date|time:"H:i" }}
+                                    {% if visit.reason %} - {{ visit.reason|truncatechars:40 }}{% endif %}
+                                </small>
+                            </div>
+                            <a href="{% url 'patients:start_triage' visit.id %}" class="btn btn-primary">
+                                <i class="bi bi-heart-pulse me-1"></i>Start Triage
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="bi bi-check-circle fs-1 text-success"></i>
+                    <p class="mt-2 mb-0">No patients waiting for triage</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-check-circle text-success me-2"></i>Recently Triaged
+                </h5>
+                <span class="badge bg-success">{{ in_triage.count }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if in_triage %}
+                <div class="list-group list-group-flush">
+                    {% for visit in in_triage %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-info me-2">Q{{ visit.queue_number }}</span>
+                                    <strong>{{ visit.patient.full_name }}</strong>
+                                </div>
+                                {% if visit.triage %}
+                                <small class="text-secondary">
+                                    <i class="bi bi-heart-pulse me-1"></i>
+                                    BP: {{ visit.triage.bp_display }}
+                                    | HR: {{ visit.triage.heart_rate|default:"-" }}
+                                    | Temp: {{ visit.triage.temperature|default:"-" }}°C
+                                </small>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'patients:edit_triage' visit.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-secondary">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2 mb-0">No recently triaged patients</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

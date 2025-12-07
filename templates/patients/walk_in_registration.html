@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Walk-In Registration{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'patients:reception_dashboard' %}">Reception</a></li>
+                <li class="breadcrumb-item active">New Patient</li>
+            </ol>
+        </nav>
+        <h1 class="page-title">Walk-In Patient Registration</h1>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row g-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">Personal Information</h5>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                    {{ form.first_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                    {{ form.last_name }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">ID Type</label>
+                    {{ form.id_type }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">ID Number (NRIC / Passport)</label>
+                    {{ form.id_number }}
+                    <small class="text-muted">For NRIC, date of birth will be auto-filled</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                    {{ form.gender }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Phone <span class="text-danger">*</span></label>
+                    {{ form.phone }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    {{ form.email }}
+                </div>
+                
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3 mt-3">Medical Information</h5>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Allergies</label>
+                    {{ form.allergies }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Blood Type</label>
+                    {{ form.blood_type }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Panel / Corporate</label>
+                    {{ form.panel }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Chronic Illnesses</label>
+                    {{ form.chronic_illnesses }}
+                </div>
+                
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3 mt-3">Emergency Contact</h5>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Emergency Contact Name</label>
+                    {{ form.emergency_contact_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Emergency Contact Phone</label>
+                    {{ form.emergency_contact_phone }}
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    {{ form.address }}
+                </div>
+                
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+            
+            {% if form.errors %}
+            <div class="alert alert-danger mt-4">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <p class="mb-0"><strong>{{ field.label }}:</strong> {{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-person-check me-2"></i>Register & Proceed to Check-In
+                </button>
+                <a href="{% url 'patients:reception_dashboard' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

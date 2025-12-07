@@ -61,23 +61,36 @@ class Visit(models.Model):
         ('otc', 'Over The Counter'),
         ('followup', 'Follow-up'),
         ('emergency', 'Emergency'),
+        ('vaccination', 'Vaccination'),
     ]
     
     STATUS_CHOICES = [
-        ('waiting', 'Waiting'),
-        ('in_progress', 'In Progress'),
+        ('waiting_triage', 'Waiting - Triage'),
+        ('waiting_doctor', 'Waiting - Doctor'),
+        ('in_consultation', 'In Consultation'),
+        ('to_pharmacy', 'To Pharmacy'),
+        ('to_lab', 'To Lab'),
+        ('ready_for_payment', 'Ready for Payment'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
     
+    PAYER_TYPE_CHOICES = [
+        ('self_pay', 'Self Pay'),
+        ('corporate', 'Corporate'),
+        ('insurance', 'Insurance'),
+    ]
+    
     visit_number = models.CharField(max_length=20, unique=True)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='visits')
-    doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='patient_visits')
+    doctor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='patient_visits')
     visit_type = models.CharField(max_length=20, choices=VISIT_TYPE_CHOICES, default='medical')
+    payer_type = models.CharField(max_length=20, choices=PAYER_TYPE_CHOICES, default='self_pay')
     visit_date = models.DateTimeField()
     reason = models.TextField(blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='waiting_triage')
     queue_number = models.IntegerField(null=True, blank=True)
+    room = models.CharField(max_length=50, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='created_visits')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -87,6 +100,55 @@ class Visit(models.Model):
 
     def __str__(self):
         return f"{self.visit_number} - {self.patient.full_name}"
+    
+    @property
+    def status_display_class(self):
+        status_classes = {
+            'waiting_triage': 'warning',
+            'waiting_doctor': 'info',
+            'in_consultation': 'primary',
+            'to_pharmacy': 'secondary',
+            'to_lab': 'secondary',
+            'ready_for_payment': 'success',
+            'completed': 'success',
+            'cancelled': 'danger',
+        }
+        return status_classes.get(self.status, 'secondary')
+
+
+class Triage(models.Model):
+    visit = models.OneToOneField(Visit, on_delete=models.CASCADE, related_name='triage')
+    bp_systolic = models.IntegerField(null=True, blank=True, verbose_name='BP Systolic')
+    bp_diastolic = models.IntegerField(null=True, blank=True, verbose_name='BP Diastolic')
+    heart_rate = models.IntegerField(null=True, blank=True, verbose_name='Heart Rate (bpm)')
+    temperature = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, verbose_name='Temperature (°C)')
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='Weight (kg)')
+    height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name='Height (cm)')
+    spo2 = models.IntegerField(null=True, blank=True, verbose_name='SpO2 (%)')
+    pain_score = models.IntegerField(null=True, blank=True, verbose_name='Pain Score (0-10)')
+    notes = models.TextField(blank=True)
+    allergy_flag = models.BooleanField(default=False, verbose_name='Allergy Alert')
+    infection_risk = models.BooleanField(default=False, verbose_name='Infection Risk')
+    fall_risk = models.BooleanField(default=False, verbose_name='Fall Risk')
+    performed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Triage for {self.visit}"
+    
+    @property
+    def bp_display(self):
+        if self.bp_systolic and self.bp_diastolic:
+            return f"{self.bp_systolic}/{self.bp_diastolic}"
+        return "-"
+    
+    @property
+    def bmi(self):
+        if self.weight and self.height and self.height > 0:
+            height_m = float(self.height) / 100
+            return round(float(self.weight) / (height_m * height_m), 1)
+        return None
 
 
 class Consultation(models.Model):
