@@ -267,10 +267,12 @@ def add_prescriptions_bulk(request, consultation_id):
 
 @login_required
 def appointment_list(request):
-    date_filter = request.GET.get('date', timezone.now().date().isoformat())
+    date_filter = request.GET.get('date', '')
     doctor_filter = request.GET.get('doctor', '')
     
-    appointments = Appointment.objects.filter(appointment_date=date_filter)
+    appointments = Appointment.objects.all().order_by('appointment_date', 'appointment_time')
+    if date_filter:
+        appointments = appointments.filter(appointment_date=date_filter)
     if doctor_filter:
         appointments = appointments.filter(doctor_id=doctor_filter)
     
@@ -341,9 +343,11 @@ def calendar_events(request):
     
     appointments = Appointment.objects.all()
     if start:
-        appointments = appointments.filter(appointment_date__gte=start)
+        start_date = start.split('T')[0]
+        appointments = appointments.filter(appointment_date__gte=start_date)
     if end:
-        appointments = appointments.filter(appointment_date__lte=end)
+        end_date = end.split('T')[0]
+        appointments = appointments.filter(appointment_date__lte=end_date)
     if doctor:
         appointments = appointments.filter(doctor_id=doctor)
     
