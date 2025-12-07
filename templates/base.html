@@ -279,6 +279,21 @@
         const inputField = document.getElementById('assistantInput');
         const sendBtn = document.getElementById('btnSendMessage');
         
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
         toggleBtn.addEventListener('click', function() {
             chatBox.classList.toggle('d-none');
             if (!chatBox.classList.contains('d-none')) {
@@ -307,12 +322,13 @@
             sendBtn.disabled = true;
             
             const currentPage = window.location.pathname;
+            const csrfToken = getCookie('csrftoken');
             
             fetch('/ai/api/assistant/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({ 
                     message: message,
