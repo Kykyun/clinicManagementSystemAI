@@ -65,8 +65,13 @@
                             {{ form.discount }}
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Tax Rate %</label>
-                            {{ form.tax_rate }}
+                            <label class="form-label">SST Tax</label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-primary sst-btn flex-fill" data-rate="0" id="sstNone">No Tax</button>
+                                <button type="button" class="btn btn-outline-primary sst-btn flex-fill" data-rate="6" id="sst6">6%</button>
+                                <button type="button" class="btn btn-outline-primary sst-btn flex-fill" data-rate="8" id="sst8">8%</button>
+                            </div>
+                            <input type="hidden" name="tax_rate" id="id_tax_rate" value="0">
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary">
@@ -83,4 +88,51 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sst-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .sst-btn.active {
+        background: linear-gradient(135deg, #2A7DE1 0%, #1D4ED8 100%);
+        border-color: #2A7DE1;
+        color: white;
+    }
+    .sst-btn:hover:not(.active) {
+        background: #EBF4FF;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sstButtons = document.querySelectorAll('.sst-btn');
+    const taxRateInput = document.getElementById('id_tax_rate');
+    
+    // Set default to "No Tax"
+    document.getElementById('sstNone').classList.add('active');
+    
+    sstButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            sstButtons.forEach(function(b) {
+                b.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Set the hidden input value
+            taxRateInput.value = this.dataset.rate;
+        });
+    });
+});
+</script>
 {% endblock %}
