@@ -265,6 +265,50 @@
 
 {% block content %}
 <div class="row g-4 mb-4">
+    <div class="col-12">
+        <h6 class="text-muted mb-3"><i class="bi bi-lightning"></i> Quick Actions</h6>
+        <div class="row g-3">
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'patients:patient_create' %}" class="quick-action-btn">
+                    <i class="bi bi-person-plus text-primary"></i>
+                    <span>New Patient</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'patients:visit_create' %}" class="quick-action-btn">
+                    <i class="bi bi-clipboard-plus text-success"></i>
+                    <span>New Visit</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'patients:appointment_create' %}" class="quick-action-btn">
+                    <i class="bi bi-calendar-plus text-info"></i>
+                    <span>Appointment</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'finance:invoice_create' %}" class="quick-action-btn">
+                    <i class="bi bi-receipt text-warning"></i>
+                    <span>New Invoice</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'management_app:reporting' %}" class="quick-action-btn">
+                    <i class="bi bi-bar-chart text-danger"></i>
+                    <span>Reports</span>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'setup_app:medicine_list' %}" class="quick-action-btn">
+                    <i class="bi bi-capsule text-purple"></i>
+                    <span>Medicines</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
     <div class="col-6 col-lg-3">
         <div class="card stat-card-modern">
             <div class="card-body">
@@ -467,50 +511,6 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <div class="col-12">
-        <h6 class="text-muted mb-3"><i class="bi bi-lightning"></i> Quick Actions</h6>
-        <div class="row g-3">
-            <div class="col-6 col-md-3 col-lg-2">
-                <a href="{% url 'patients:patient_create' %}" class="quick-action-btn">
-                    <i class="bi bi-person-plus text-primary"></i>
-                    <span>New Patient</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <a href="{% url 'patients:visit_create' %}" class="quick-action-btn">
-                    <i class="bi bi-clipboard-plus text-success"></i>
-                    <span>New Visit</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <a href="{% url 'patients:appointment_create' %}" class="quick-action-btn">
-                    <i class="bi bi-calendar-plus text-info"></i>
-                    <span>Appointment</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <a href="{% url 'finance:invoice_create' %}" class="quick-action-btn">
-                    <i class="bi bi-receipt text-warning"></i>
-                    <span>New Invoice</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <a href="{% url 'management_app:reporting' %}" class="quick-action-btn">
-                    <i class="bi bi-bar-chart text-danger"></i>
-                    <span>Reports</span>
-                </a>
-            </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <a href="{% url 'setup_app:medicine_list' %}" class="quick-action-btn">
-                    <i class="bi bi-capsule text-purple"></i>
-                    <span>Medicines</span>
-                </a>
             </div>
         </div>
     </div>
