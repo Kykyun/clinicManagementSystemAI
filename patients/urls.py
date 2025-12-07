@@ -54,6 +54,7 @@ urlpatterns = [
     # Pharmacy Dashboard
     path('pharmacy/', views.pharmacy_dashboard, name='pharmacy_dashboard'),
     path('pharmacy/dispense/<int:visit_id>/', views.dispense_prescriptions, name='dispense_prescriptions'),
+    path('pharmacy/otc/<int:visit_id>/', views.otc_dispense, name='otc_dispense'),
     
     # Queue Display
     path('queue/', views.queue_display, name='queue_display'),

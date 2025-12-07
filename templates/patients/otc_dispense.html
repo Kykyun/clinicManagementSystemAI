@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}OTC Dispense{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'patients:pharmacy_dashboard' %}">Pharmacy</a></li>
+                <li class="breadcrumb-item active">OTC Sale</li>
+            </ol>
+        </nav>
+        <h1 class="page-title">OTC Sale - Q{{ visit.queue_number }}</h1>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-person me-2"></i>Customer</h5>
+            </div>
+            <div class="card-body">
+                <h5 class="mb-1">{{ visit.patient.full_name }}</h5>
+                <span class="badge bg-info mb-3">OTC Purchase</span>
+                
+                <div class="mb-2">
+                    <small class="text-secondary">Patient ID</small>
+                    <div>{{ visit.patient.patient_id }}</div>
+                </div>
+                
+                <div class="mb-2">
+                    <small class="text-secondary">Phone</small>
+                    <div>{{ visit.patient.phone|default:"-" }}</div>
+                </div>
+                
+                {% if visit.reason %}
+                <div class="mb-2">
+                    <small class="text-secondary">Notes</small>
+                    <div>{{ visit.reason }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-cart-plus me-2"></i>Add Items</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="otcForm">
+                    {% csrf_token %}
+                    
+                    <div id="itemsContainer">
+                        <div class="row g-3 mb-3 item-row">
+                            <div class="col-md-7">
+                                <label class="form-label">Medicine</label>
+                                <select name="medicine_id" class="form-select medicine-select">
+                                    <option value="">-- Select Medicine --</option>
+                                    {% for med in medicines %}
+                                    <option value="{{ med.id }}" data-price="{{ med.selling_price }}" data-stock="{{ med.stock_quantity }}">
+                                        {{ med.name }} (Stock: {{ med.stock_quantity }}) - RM {{ med.selling_price }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" name="quantity" class="form-control qty-input" min="1" value="1">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-outline-danger btn-remove-item" style="display:none;">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="addItemBtn" class="btn btn-outline-primary mb-4">
+                        <i class="bi bi-plus-lg me-1"></i>Add Another Item
+                    </button>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'patients:pharmacy_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>Complete & Send to Billing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('itemsContainer');
+    const addBtn = document.getElementById('addItemBtn');
+    
+    function createItemRow() {
+        const row = document.createElement('div');
+        row.className = 'row g-3 mb-3 item-row';
+        row.innerHTML = `
+            <div class="col-md-7">
+                <label class="form-label">Medicine</label>
+                <select name="medicine_id" class="form-select medicine-select">
+                    <option value="">-- Select Medicine --</option>
+                    {% for med in medicines %}
+                    <option value="{{ med.id }}" data-price="{{ med.selling_price }}" data-stock="{{ med.stock_quantity }}">
+                        {{ med.name }} (Stock: {{ med.stock_quantity }}) - RM {{ med.selling_price }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Quantity</label>
+                <input type="number" name="quantity" class="form-control qty-input" min="1" value="1">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-danger btn-remove-item">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        return row;
+    }
+    
+    addBtn.addEventListener('click', function() {
+        const newRow = createItemRow();
+        container.appendChild(newRow);
+        updateRemoveButtons();
+    });
+    
+    container.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-item')) {
+            e.target.closest('.item-row').remove();
+            updateRemoveButtons();
+        }
+    });
+    
+    function updateRemoveButtons() {
+        const rows = container.querySelectorAll('.item-row');
+        rows.forEach((row, index) => {
+            const removeBtn = row.querySelector('.btn-remove-item');
+            if (removeBtn) {
+                removeBtn.style.display = rows.length > 1 ? 'block' : 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

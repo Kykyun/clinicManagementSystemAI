@@ -464,11 +464,17 @@ def patient_check_in(request, patient_id):
             visit.visit_number = generate_visit_number()
             visit.visit_date = timezone.now()
             visit.created_by = request.user
-            visit.status = 'waiting_triage'
+            if visit.visit_type == 'otc':
+                visit.status = 'to_pharmacy'
+            else:
+                visit.status = 'waiting_triage'
             today_visits = Visit.objects.filter(visit_date__date=timezone.now().date()).count()
             visit.queue_number = today_visits + 1
             visit.save()
-            messages.success(request, f'Patient checked in. Queue number: {visit.queue_number}')
+            if visit.visit_type == 'otc':
+                messages.success(request, f'OTC patient checked in. Queue #{visit.queue_number} - Proceed to Pharmacy')
+            else:
+                messages.success(request, f'Patient checked in. Queue number: {visit.queue_number}')
             return redirect('patients:reception_dashboard')
     else:
         initial = {}
@@ -675,11 +681,15 @@ def pharmacy_dashboard(request):
     pending_visits = Visit.objects.filter(
         visit_date__date=today,
         status='to_pharmacy'
-    ).select_related('patient', 'doctor', 'consultation').order_by('queue_number')
+    ).select_related('patient', 'doctor').order_by('queue_number')
     
     pending_prescriptions = []
+    otc_visits = []
+    
     for visit in pending_visits:
-        if hasattr(visit, 'consultation'):
+        if visit.visit_type == 'otc':
+            otc_visits.append(visit)
+        elif hasattr(visit, 'consultation'):
             prescriptions = visit.consultation.prescriptions.filter(is_dispensed=False)
             if prescriptions.exists():
                 pending_prescriptions.append({
@@ -694,6 +704,7 @@ def pharmacy_dashboard(request):
     
     context = {
         'pending_prescriptions': pending_prescriptions,
+        'otc_visits': otc_visits,
         'low_stock_medicines': low_stock_medicines,
         'today': today,
     }
@@ -740,6 +751,46 @@ def dispense_prescriptions(request, visit_id):
     return render(request, 'patients/dispense_prescriptions.html', {
         'visit': visit,
         'prescriptions': prescriptions,
+    })
+
+
+@login_required
+@pharmacy_required
+def otc_dispense(request, visit_id):
+    visit = get_object_or_404(Visit, pk=visit_id)
+    
+    if visit.visit_type != 'otc':
+        messages.error(request, 'This is not an OTC visit.')
+        return redirect('patients:pharmacy_dashboard')
+    
+    medicines = Medicine.objects.filter(is_active=True).order_by('name')
+    
+    if request.method == 'POST':
+        medicine_ids = request.POST.getlist('medicine_id')
+        quantities = request.POST.getlist('quantity')
+        
+        items_added = 0
+        for med_id, qty in zip(medicine_ids, quantities):
+            if med_id and qty:
+                try:
+                    medicine = Medicine.objects.get(pk=med_id)
+                    quantity = int(qty)
+                    if quantity > 0:
+                        medicine.stock_quantity = max(0, medicine.stock_quantity - quantity)
+                        medicine.save()
+                        items_added += 1
+                except (Medicine.DoesNotExist, ValueError):
+                    continue
+        
+        visit.status = 'ready_for_payment'
+        visit.save()
+        
+        messages.success(request, f'OTC items dispensed ({items_added} items). Patient ready for payment.')
+        return redirect('patients:pharmacy_dashboard')
+    
+    return render(request, 'patients/otc_dispense.html', {
+        'visit': visit,
+        'medicines': medicines,
     })
 
 

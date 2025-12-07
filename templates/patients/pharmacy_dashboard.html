@@ -16,6 +16,33 @@
 
 <div class="row g-4">
     <div class="col-lg-8">
+        {% if otc_visits %}
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info-subtle d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-basket text-info me-2"></i>OTC Purchases
+                </h5>
+                <span class="badge bg-info">{{ otc_visits|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for visit in otc_visits %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-dark me-2">Q{{ visit.queue_number }}</span>
+                            <strong>{{ visit.patient.full_name }}</strong>
+                            <span class="badge bg-info ms-2">OTC</span>
+                        </div>
+                        <a href="{% url 'patients:otc_dispense' visit.id %}" class="btn btn-info btn-sm">
+                            <i class="bi bi-cart-plus me-1"></i>Add Items & Complete
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
