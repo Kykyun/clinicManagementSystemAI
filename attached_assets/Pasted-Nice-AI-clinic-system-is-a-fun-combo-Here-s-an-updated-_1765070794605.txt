@@ -1,0 +1,313 @@
+Nice—AI + clinic system is a fun combo 😄
+
+Here’s an **updated prompt** you can use.
+It **keeps all the modules & fields from the previous prompt** but adds **AI integration requirements**.
+
+You can copy–paste this whole thing into another AI/code generator:
+
+---
+
+### PROMPT: AI-ENHANCED CLINIC MANAGEMENT SYSTEM (DJANGO/FLASK)
+
+You are an expert senior full-stack engineer and MLOps engineer.
+Build a **web-based Clinic Management System** using **Python** with either **Django (preferred)** or **Flask** as the backend framework, **integrated with AI features**.
+
+---
+
+## 1. General Requirements
+
+* Tech stack:
+
+  * Backend: Python (Django preferred, otherwise Flask)
+  * Frontend: HTML5, CSS, JavaScript, Bootstrap (or similar)
+  * Database: PostgreSQL or MySQL
+  * Architecture: Clean modular design (per app/module), clear separation of concerns.
+
+* Core features (same as previous prompt):
+
+  * Authentication (login/logout, hashed passwords, password reset)
+  * Role-based access control (Admin, Doctor, Nurse, Receptionist, Finance, HQ Staff, etc.)
+  * Responsive UI
+  * Audit logging for critical actions (medical + finance data)
+  * Modules:
+
+    * Patient Module
+    * Finance Module
+    * Management Module
+    * HQ Management Module
+    * Setup Module
+      (Reuse all fields and behaviors described previously.)
+
+* **AI Integration – General Rules**
+
+  * Create a dedicated **`ai` service layer** (e.g. `ai/services.py`) that communicates with an external AI API (like OpenAI or similar):
+
+    * Use environment variable for API key (e.g. `AI_API_KEY`), never hard-code secrets.
+    * Wrap all AI calls in reusable helper functions (e.g. `generate_summary`, `predict_stock_usage`, etc.).
+    * Handle timeouts, errors, and rate limits gracefully.
+  * **AI suggestions must never be auto-applied** to medical records or financial data:
+
+    * Always show AI result as “suggested” or “draft”.
+    * User must explicitly confirm/edit before saving to database.
+  * Log AI interactions (user, timestamp, type of request, truncated input/output) for traceability.
+  * Provide patient-safe disclaimers wherever AI is used for clinical support:
+
+    * “This is an AI-generated suggestion for clinician support only and must be reviewed by a qualified healthcare professional.”
+
+---
+
+## 2. AI Features in PATIENT MODULE
+
+Implement all standard features from the previous prompt (Registration, Consultation, Appointment, Payment, Doctor’s Fee, Antenatal, FOMEMA, Immunization, Lab & X-Ray, Medical Checkup, Medical History, Med. History, Referral Letter, Quarantine Slip), **plus the following AI enhancements**:
+
+1. **AI Triage & Reason Classification (Registration / Appointment)**
+
+   * When receptionist or patient enters the “chief complaint” / free text reason:
+
+     * Call AI to:
+
+       * Classify urgency (e.g. low/medium/high).
+       * Suggest appropriate department/doctor specialization.
+       * Suggest expected consultation duration (e.g. 10/20/30 minutes).
+   * Display suggestions in the UI (e.g. colored badge for urgency); user can accept or ignore.
+
+2. **AI Consultation Note Assistant**
+
+   * During Consultation:
+
+     * Doctor can type bullet notes or dictation-like free text.
+     * AI endpoint:
+
+       * Clean + structure notes into sections: History, Examination, Assessment, Plan.
+       * Suggest possible ICD-10 codes / diagnosis keywords **as hints only**.
+     * Show AI-drafted structured note; doctor can edit and then save.
+
+3. **AI Medical History Summary**
+
+   * In Medical History / Med. History:
+
+     * Provide a button “AI Summary”.
+     * AI reads patient’s previous visits, diagnoses, medications, allergies, lab results.
+     * Generate a concise summary:
+
+       * “Key chronic conditions”
+       * “Recent acute issues”
+       * “Important allergies and medications”
+     * Store it as a generated, view-only note (not replacing raw data).
+
+4. **AI Referral Letter & Quarantine Slip Drafting**
+
+   * When creating a Referral Letter or Quarantine Slip:
+
+     * Pre-fill structured fields as usual.
+     * AI generates the **body text** of the letter/slip based on:
+
+       * Patient details, visit notes, diagnosis, lab results.
+     * User can edit AI-generated text before saving/printing.
+
+5. **AI Lab & X-Ray Result Extraction (Optional but preferred)**
+
+   * When uploading lab/X-Ray reports as PDF or text:
+
+     * AI attempts to:
+
+       * Extract key values (e.g. hemoglobin, WBC, etc.).
+       * Map them into structured fields.
+       * Flag abnormal results (based on provided normal ranges).
+     * Show extracted data as editable preliminary fields, not auto-final.
+
+6. **AI Antenatal & Immunization Reminder Suggestions**
+
+   * For Antenatal:
+
+     * AI suggests upcoming checklist items (e.g. next tests, scans, visit frequency) according to GA (gestational age) and local guidelines (generic, not jurisdiction-specific).
+   * For Immunization:
+
+     * AI suggests next due vaccine based on age and immunization history.
+   * All suggestions must be explicitly marked as **non-binding clinical assistance**.
+
+---
+
+## 3. AI in FINANCE MODULE
+
+Implement all standard Finance features (Credit Payment, EOD, Account Ledger, Panel Claim, Supplier, Stock Order, Finance Setup), **plus AI support:**
+
+1. **AI Revenue & Visit Forecasting**
+
+   * In EOD and Reporting views:
+
+     * AI estimates:
+
+       * Expected patient volume and revenue for the next 7/30 days.
+     * Input features: past visits, revenue by day, seasonality (if available).
+     * Display as simple charts/text forecasts.
+
+2. **AI Anomaly Detection (Finance)**
+
+   * For Account Ledger and EOD:
+
+     * AI scans recent transactions to flag:
+
+       * Unusual high/low amounts.
+       * Odd patterns (e.g. repeated refunds, unusual discounts).
+     * Display as a “Possible anomalies” list for Finance/Admin to review.
+
+3. **AI Stock Order Suggestions**
+
+   * When viewing Stock Order or preparing new orders:
+
+     * AI suggests reorder quantities based on:
+
+       * Historical usage.
+       * Current stock levels.
+       * Minimum stock thresholds from Setup.
+     * Show suggestions with explainable details (e.g. “Average use: 20/day, current stock: 50, suggested order: 300 for 15 days”).
+
+---
+
+## 4. AI in MANAGEMENT MODULE
+
+Implement all standard Management features (Reporting, Dashboard, Clinic Setup, Staff & User, Attendance, Admin Profile, Queue Calling Display, Promotional Product, Membership Reward), **plus AI features:**
+
+1. **AI-Powered Dashboard Insights**
+
+   * On the dashboard:
+
+     * AI generates short insight cards like:
+
+       * “Today’s visits are higher than the 7-day average by X%.”
+       * “Most common visit reason this week: [Condition].”
+       * “Top 5 medicines by usage this month.”
+     * These are read-only suggestions based on existing data.
+
+2. **Natural Language Analytics (NL Query)**
+
+   * Provide a text box: “Ask about your clinic data”.
+   * Example queries:
+
+     * “How many antenatal visits did we have last month?”
+     * “Which doctor saw the most patients this week?”
+   * Backend:
+
+     * AI converts natural language into safe, allowed queries over summarized/statistical data (NOT raw PHI).
+     * Only allow predefined query templates to avoid arbitrary SQL.
+     * Display answer + simple chart/table.
+
+3. **AI for Promotional Product & Membership Reward**
+
+   * For Promotional Product:
+
+     * AI can suggest which services/medicines to bundle based on:
+
+       * Usage frequency.
+       * Patient demographics.
+     * Generate promotional text description (editable).
+   * For Membership Reward:
+
+     * AI suggests:
+
+       * Simple points rules.
+       * Possible campaigns (e.g. “Double points for health screening in March”).
+
+---
+
+## 5. AI in HQ MANAGEMENT MODULE
+
+Implement standard HQ features (Branch Info, Branch Order, HQ Stock, HQ Order, HQ Panel Claim), **plus:**
+
+1. **AI Branch Demand Forecasting**
+
+   * For HQ Stock and Branch Order:
+
+     * AI predicts demand per branch for key items.
+     * Provide suggested transfer quantities from HQ to branches.
+
+2. **AI Panel Claim Monitoring**
+
+   * For HQ Panel Claim:
+
+     * AI highlights patterns:
+
+       * Panels with delayed payment trends.
+       * Branches with high rejected claim rates.
+     * Suggest basic follow-up priorities.
+
+---
+
+## 6. AI in SETUP MODULE
+
+Implement standard Setup features (Medicine, Stock Setup, Fee, Log, Allergy, Lab Test, Disposable, Operation & Room, Panel), **plus AI utilities:**
+
+1. **AI Search & Recommendation**
+
+   * Intelligent search across master data:
+
+     * Example: search by partial text or synonyms and AI ranks relevant medicines/lab tests/panels.
+   * When adding new entries (medicine, lab test, panel), AI can:
+
+     * Suggest standardized names, common dosages, or typical normal ranges (for lab tests).
+     * **Do not auto-save; require user confirmation.**
+
+2. **AI Audit Log Insights**
+
+   * In Log view:
+
+     * AI summarizes unusual user activity (e.g. many edits to finance records by same user, frequent logins from different IPs/time patterns).
+
+---
+
+## 7. AI Assistant (Global Feature)
+
+* Implement a **global AI assistant panel** accessible (with permissions) from the main navigation.
+* Capabilities:
+
+  * Answer questions about **how to use the system** (e.g., “How do I register a new antenatal patient?”) by referencing internal help text.
+  * Summarize on-screen data (e.g., currently filtered patient list, or a specific patient profile) without exposing raw data outside the system.
+* Restrict:
+
+  * The assistant must not be allowed to make any changes to the database directly.
+  * It only reads context provided by the backend and returns text responses.
+
+---
+
+## 8. Deliverables
+
+On top of standard project code:
+
+1. **AI Service Layer**
+
+   * `ai/` module or app with:
+
+     * Configuration for external AI client.
+     * Functions like:
+
+       * `ai_summarize_medical_history(patient_id)`
+       * `ai_suggest_triage(complaint_text)`
+       * `ai_forecast_revenue(branch_id, days)`
+       * `ai_suggest_stock_order(item_id, branch_id)`
+   * Unit-testable and mockable.
+
+2. **Example API Integration**
+
+   * Code snippets showing:
+
+     * How AI is called from views.
+     * How results are displayed on front-end forms/pages.
+     * Error handling and fallbacks.
+
+3. **Configuration Instructions**
+
+   * Where to put `AI_API_KEY` and other settings.
+   * How to enable/disable AI features via environment variables (e.g. `AI_ENABLED=true/false`).
+
+4. **Security & Compliance**
+
+   * Do not log full raw PHI in external logs.
+   * Truncate or anonymize prompts wherever possible.
+   * Make it easy to switch AI provider (abstracted client).
+
+Use clean, maintainable code and ensure AI features remain **assistive**, with final decisions always taken by human staff.
+
+---
+
+If you tell me whether you prefer **Django or Flask**, I can also add a short code example of how one of these AI functions would be wired into an endpoint (e.g. AI-generated referral letter).
