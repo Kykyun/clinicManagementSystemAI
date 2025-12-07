@@ -46,7 +46,6 @@ class Invoice(models.Model):
 class InvoiceItem(models.Model):
     ITEM_TYPE_CHOICES = [
         ('consultation', 'Consultation'),
-        ('medicine', 'Medicine'),
         ('lab', 'Laboratory'),
         ('procedure', 'Procedure'),
         ('disposable', 'Disposable'),
