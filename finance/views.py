@@ -116,7 +116,7 @@ def payment_create(request, invoice_id):
             payment.invoice = invoice
             payment.received_by = request.user
             payment.save()
-            messages.success(request, f'Payment of ${payment.amount} recorded.')
+            messages.success(request, f'Payment of RM {payment.amount} recorded.')
             return redirect('finance:invoice_detail', pk=invoice.pk)
     else:
         form = PaymentForm(initial={'amount': invoice.outstanding_balance})
