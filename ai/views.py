@@ -21,6 +21,7 @@ from .services import (
     ai_chat_assistant,
     ai_forecast_revenue,
     ai_detect_anomalies,
+    ai_suggest_prescriptions,
     AIService,
 )
 
@@ -397,4 +398,73 @@ def api_anomaly_detection(request):
         result = ai_detect_anomalies(transaction_data, user=request.user)
         return JsonResponse(result)
     except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(['POST'])
+def api_prescription_suggestions(request, consultation_id):
+    try:
+        from patients.models import Consultation, Prescription
+        from setup_app.models import Medicine
+        import uuid
+        
+        consultation = get_object_or_404(Consultation, id=consultation_id)
+        patient = consultation.visit.patient
+        
+        allergies = ', '.join([a.name for a in patient.allergies.all()]) if patient.allergies.exists() else 'None known'
+        
+        consultation_data = {
+            'patient_age': patient.age,
+            'patient_gender': patient.get_gender_display() if hasattr(patient, 'get_gender_display') else patient.gender,
+            'allergies': allergies,
+            'chief_complaint': consultation.chief_complaint,
+            'diagnosis': consultation.diagnosis,
+            'treatment_plan': consultation.treatment_plan or '',
+            'bp': consultation.vitals_bp or '-',
+            'pulse': consultation.vitals_pulse or '-',
+        }
+        
+        available_medicines = list(Medicine.objects.filter(is_active=True).values(
+            'id', 'name', 'generic_name', 'strength', 'form', 'selling_price'
+        ))
+        
+        result = ai_suggest_prescriptions(consultation_data, available_medicines, user=request.user)
+        
+        if result.get('success') and result.get('prescriptions'):
+            for rx in result['prescriptions']:
+                if rx.get('is_new_medicine', False):
+                    existing = Medicine.objects.filter(name__iexact=rx.get('medicine_name', '')).first()
+                    if not existing:
+                        sku = f"AI-{uuid.uuid4().hex[:8].upper()}"
+                        new_med = Medicine.objects.create(
+                            name=rx.get('medicine_name', 'Unknown'),
+                            generic_name=rx.get('generic_name', ''),
+                            strength=rx.get('dosage', ''),
+                            form='tablet',
+                            sku=sku,
+                            selling_price=0,
+                            cost_price=0,
+                            stock_quantity=0,
+                            is_active=True,
+                        )
+                        rx['medicine_id'] = new_med.id
+                        rx['auto_added'] = True
+                    else:
+                        rx['medicine_id'] = existing.id
+                        rx['is_new_medicine'] = False
+                else:
+                    med = Medicine.objects.filter(name__iexact=rx.get('medicine_name', '')).first()
+                    if med:
+                        rx['medicine_id'] = med.id
+                    else:
+                        med = Medicine.objects.filter(name__icontains=rx.get('medicine_name', '')).first()
+                        if med:
+                            rx['medicine_id'] = med.id
+                            rx['medicine_name'] = med.name
+        
+        return JsonResponse(result)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

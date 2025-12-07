@@ -16,4 +16,5 @@ urlpatterns = [
     path('api/assistant/', views.api_assistant, name='api_assistant'),
     path('api/revenue-forecast/', views.api_revenue_forecast, name='api_revenue_forecast'),
     path('api/anomaly-detection/', views.api_anomaly_detection, name='api_anomaly_detection'),
+    path('api/prescription-suggestions/<int:consultation_id>/', views.api_prescription_suggestions, name='api_prescription_suggestions'),
 ]

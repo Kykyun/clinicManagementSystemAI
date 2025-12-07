@@ -58,9 +58,14 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between">
                 <span><i class="bi bi-capsule"></i> Prescriptions</span>
-                <a href="{% url 'patients:prescription_add' consultation.pk %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus"></i> Add Medicine
-                </a>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-primary me-1" id="btnAiSuggestRx">
+                        <i class="bi bi-robot"></i> AI Suggest
+                    </button>
+                    <a href="{% url 'patients:prescription_add' consultation.pk %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus"></i> Add Medicine
+                    </a>
+                </div>
             </div>
             <div class="card-body p-0">
                 <table class="table mb-0">
@@ -115,4 +120,165 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="aiRxModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-robot me-2"></i>AI Prescription Suggestions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="rxLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">AI is analyzing the consultation...</p>
+                </div>
+                
+                <div id="rxContent" style="display: none;">
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <span id="rxDisclaimer"></span>
+                    </div>
+                    
+                    <div id="rxWarnings" class="mb-3"></div>
+                    
+                    <p id="rxClinicalNotes" class="text-muted small mb-3"></p>
+                    
+                    <table class="table table-sm" id="rxSuggestionsTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllRx" checked></th>
+                                <th>Medicine</th>
+                                <th>Dosage</th>
+                                <th>Frequency</th>
+                                <th>Duration</th>
+                                <th>Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rxSuggestionsBody"></tbody>
+                    </table>
+                    
+                    <button type="button" id="btnApplyRx" class="btn btn-success">
+                        <i class="bi bi-check-lg me-1"></i>Add Selected Prescriptions
+                    </button>
+                </div>
+                
+                <div id="rxError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const consultationId = {{ consultation.pk }};
+    let suggestedPrescriptions = [];
+    
+    document.getElementById('btnAiSuggestRx').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('aiRxModal'));
+        modal.show();
+        
+        document.getElementById('rxLoading').style.display = 'block';
+        document.getElementById('rxContent').style.display = 'none';
+        document.getElementById('rxError').style.display = 'none';
+        
+        fetch(`/ai/api/prescription-suggestions/${consultationId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('rxLoading').style.display = 'none';
+            
+            if (data.success) {
+                document.getElementById('rxContent').style.display = 'block';
+                document.getElementById('rxDisclaimer').textContent = data.disclaimer || '';
+                document.getElementById('rxClinicalNotes').textContent = data.clinical_notes || '';
+                
+                const warningsDiv = document.getElementById('rxWarnings');
+                warningsDiv.innerHTML = '';
+                if (data.warnings && data.warnings.length > 0) {
+                    data.warnings.forEach(warning => {
+                        warningsDiv.innerHTML += `<div class="alert alert-danger py-2 small"><i class="bi bi-exclamation-triangle me-1"></i>${warning}</div>`;
+                    });
+                }
+                
+                suggestedPrescriptions = data.prescriptions || [];
+                const tbody = document.getElementById('rxSuggestionsBody');
+                tbody.innerHTML = '';
+                
+                suggestedPrescriptions.forEach((rx, index) => {
+                    const newBadge = rx.auto_added ? '<span class="badge bg-success ms-1">Auto-added</span>' : (rx.is_new_medicine ? '<span class="badge bg-warning ms-1">New</span>' : '');
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><input type="checkbox" class="rx-checkbox" data-index="${index}" checked></td>
+                            <td>${rx.medicine_name}${newBadge}<br><small class="text-muted">${rx.generic_name || ''}</small></td>
+                            <td>${rx.dosage}</td>
+                            <td>${rx.frequency}</td>
+                            <td>${rx.duration}</td>
+                            <td>${rx.quantity}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                document.getElementById('rxError').style.display = 'block';
+                document.getElementById('rxError').textContent = data.error || 'Failed to get suggestions.';
+            }
+        })
+        .catch(error => {
+            document.getElementById('rxLoading').style.display = 'none';
+            document.getElementById('rxError').style.display = 'block';
+            document.getElementById('rxError').textContent = 'An error occurred. Please try again.';
+        });
+    });
+    
+    document.getElementById('selectAllRx').addEventListener('change', function() {
+        document.querySelectorAll('.rx-checkbox').forEach(cb => cb.checked = this.checked);
+    });
+    
+    document.getElementById('btnApplyRx').addEventListener('click', function() {
+        const selected = [];
+        document.querySelectorAll('.rx-checkbox:checked').forEach(cb => {
+            selected.push(suggestedPrescriptions[parseInt(cb.dataset.index)]);
+        });
+        
+        if (selected.length === 0) {
+            alert('Please select at least one prescription.');
+            return;
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Adding...';
+        
+        fetch(`/patients/consultation/${consultationId}/add-prescriptions/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ prescriptions: selected })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to add prescriptions.');
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-check-lg me-1"></i>Add Selected Prescriptions';
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            this.disabled = false;
+            this.innerHTML = '<i class="bi bi-check-lg me-1"></i>Add Selected Prescriptions';
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -197,6 +197,52 @@ def prescription_add(request, consultation_id):
 
 
 @login_required
+def add_prescriptions_bulk(request, consultation_id):
+    import json
+    from setup_app.models import Medicine
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=400)
+    
+    try:
+        consultation = get_object_or_404(Consultation, pk=consultation_id)
+        data = json.loads(request.body)
+        prescriptions_data = data.get('prescriptions', [])
+        
+        if not prescriptions_data:
+            return JsonResponse({'success': False, 'error': 'No prescriptions provided'}, status=400)
+        
+        added_count = 0
+        for rx in prescriptions_data:
+            medicine = None
+            if rx.get('medicine_id'):
+                medicine = Medicine.objects.filter(id=rx['medicine_id']).first()
+            if not medicine:
+                medicine = Medicine.objects.filter(name__iexact=rx.get('medicine_name', '')).first()
+            if not medicine:
+                medicine = Medicine.objects.filter(name__icontains=rx.get('medicine_name', '')).first()
+            
+            if medicine:
+                Prescription.objects.create(
+                    consultation=consultation,
+                    medicine=medicine,
+                    dosage=rx.get('dosage', ''),
+                    frequency=rx.get('frequency', ''),
+                    duration=rx.get('duration', ''),
+                    quantity=rx.get('quantity', 1),
+                    instructions=rx.get('instructions', ''),
+                    is_dispensed=False,
+                )
+                added_count += 1
+        
+        return JsonResponse({'success': True, 'added_count': added_count})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
 def appointment_list(request):
     date_filter = request.GET.get('date', timezone.now().date().isoformat())
     doctor_filter = request.GET.get('doctor', '')

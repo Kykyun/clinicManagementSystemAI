@@ -557,3 +557,75 @@ Only flag genuinely unusual patterns. Respond with valid JSON only."""
         return result
     except json.JSONDecodeError:
         return {"success": False, "error": "Failed to parse AI response", "raw_response": response}
+
+
+def ai_suggest_prescriptions(consultation_data: Dict, available_medicines: list, user=None) -> Dict[str, Any]:
+    """Suggest prescriptions based on consultation diagnosis and available medicines."""
+    service = AIService()
+    if not service.is_enabled('assistant'):
+        return {"success": False, "error": "AI prescription suggestions are not enabled"}
+    
+    medicines_list = "\n".join([
+        f"- {med['name']} ({med.get('generic_name', '')}) - {med.get('strength', '')} {med.get('form', '')}"
+        for med in available_medicines[:100]
+    ]) if available_medicines else "No medicines in database."
+    
+    prompt = f"""Based on this consultation, suggest appropriate prescriptions.
+
+Patient Details:
+- Age: {consultation_data.get('patient_age', 'Unknown')}
+- Gender: {consultation_data.get('patient_gender', 'Unknown')}
+- Allergies: {consultation_data.get('allergies', 'None known')}
+
+Consultation:
+- Chief Complaint: {consultation_data.get('chief_complaint', '')}
+- Diagnosis: {consultation_data.get('diagnosis', '')}
+- Treatment Plan: {consultation_data.get('treatment_plan', '')}
+- Vitals: BP {consultation_data.get('bp', '-')}, Pulse {consultation_data.get('pulse', '-')}
+
+Available Medicines in Clinic:
+{medicines_list}
+
+Respond in JSON format:
+{{
+    "prescriptions": [
+        {{
+            "medicine_name": "Medicine name (must match available medicines if possible)",
+            "generic_name": "Generic name",
+            "dosage": "e.g., 500mg, 10ml",
+            "frequency": "e.g., BD (twice daily), TDS (three times daily), OD (once daily)",
+            "duration": "e.g., 3 days, 5 days, 1 week",
+            "quantity": numeric quantity to dispense,
+            "instructions": "Any special instructions",
+            "is_new_medicine": true if medicine not in available list or false if it exists
+        }}
+    ],
+    "clinical_notes": "Brief explanation of prescription choices",
+    "warnings": ["Any drug interaction or allergy warnings"]
+}}
+
+Important:
+1. Match medicine names to the available medicines list when possible
+2. If a required medicine is not available, set is_new_medicine to true
+3. Use standard medical abbreviations: OD (once daily), BD (twice daily), TDS (three times daily), QID (four times daily), PRN (as needed)
+4. Consider patient allergies and contraindications
+
+Only respond with valid JSON."""
+
+    messages = [
+        {"role": "system", "content": "You are a clinical pharmacology assistant. Suggest appropriate prescriptions based on the diagnosis. Match medicines to the clinic's available inventory when possible. Use standard medical dosing conventions and consider patient factors like age, allergies, and vital signs."},
+        {"role": "user", "content": prompt}
+    ]
+    
+    success, response, meta = service._call_gemini(messages, user, "assistant")
+    
+    if not success:
+        return {"success": False, "error": response}
+    
+    try:
+        result = json.loads(service._clean_json_response(response))
+        result["success"] = True
+        result["disclaimer"] = "AI-suggested prescriptions require clinician review. Verify dosages and check for contraindications."
+        return result
+    except json.JSONDecodeError:
+        return {"success": False, "error": "Failed to parse AI response", "raw_response": response}
