@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from .models import User, AuditLog
-from .forms import LoginForm, UserRegistrationForm, UserUpdateForm, StaffForm
+from .forms import LoginForm, UserRegistrationForm, UserUpdateForm, StaffForm, PublicRegistrationForm
 
 
 def login_view(request):
@@ -30,6 +30,33 @@ def login_view(request):
     else:
         form = LoginForm()
     return render(request, 'accounts/login.html', {'form': form})
+
+
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('management_app:dashboard')
+    
+    if request.method == 'POST':
+        form = PublicRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            AuditLog.objects.create(
+                user=user,
+                action='create',
+                model_name='User',
+                object_id=str(user.id),
+                ip_address=request.META.get('REMOTE_ADDR'),
+                details=f'New user registered: {user.username}'
+            )
+            messages.success(request, 'Account created successfully! Please log in.')
+            return redirect('accounts:login')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{error}')
+    else:
+        form = PublicRegistrationForm()
+    return render(request, 'accounts/register.html', {'form': form})
 
 
 def forgot_password_view(request):
