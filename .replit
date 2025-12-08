@@ -35,10 +35,6 @@ outputType = "webview"
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 42403
-externalPort = 3000
-
 [userenv]
 
 [userenv.development]
@@ -46,5 +42,5 @@ DEBUG = "True"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port", "-w", "2", "clinic_management.wsgi:application"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "120", "--workers", "2", "clinic_management.wsgi:application"]
 build = ["python", "manage.py", "collectstatic", "--noinput"]
