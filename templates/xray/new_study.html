@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}New X-Ray Study{% endblock %}
+{% block page_title %}New X-Ray Study{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'xray:dashboard' %}">X-Ray</a></li>
+                <li class="breadcrumb-item active">New Study</li>
+            </ol>
+        </nav>
+        <h1 class="page-title">New X-Ray Study</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-clipboard-plus me-2"></i>Study Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="patient" class="form-label">Patient <span class="text-danger">*</span></label>
+                        <select name="patient" id="patient" class="form-select form-select-lg" required>
+                            <option value="">-- Select Patient --</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}" {% if form.patient.value == patient.id|stringformat:'s' %}selected{% endif %}>
+                                {{ patient.name }} ({{ patient.ic_number|default:patient.patient_id }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.patient.errors %}
+                        <div class="invalid-feedback d-block">{{ form.patient.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="body_region" class="form-label">Body Region <span class="text-danger">*</span></label>
+                            <select name="body_region" id="body_region" class="form-select" required>
+                                <option value="">-- Select --</option>
+                                {% for value, label in form.body_region.field.choices %}
+                                {% if value %}
+                                <option value="{{ value }}" {% if form.body_region.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if form.body_region.errors %}
+                            <div class="invalid-feedback d-block">{{ form.body_region.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="view_type" class="form-label">View Type</label>
+                            <select name="view_type" id="view_type" class="form-select">
+                                {% for value, label in form.view_type.field.choices %}
+                                <option value="{{ value }}" {% if form.view_type.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="side" class="form-label">Side</label>
+                            <select name="side" id="side" class="form-select">
+                                {% for value, label in form.side.field.choices %}
+                                <option value="{{ value }}" {% if form.side.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="priority" class="form-label">Priority</label>
+                        <select name="priority" id="priority" class="form-select" style="max-width: 200px;">
+                            {% for value, label in form.priority.field.choices %}
+                            <option value="{{ value }}" {% if form.priority.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="clinical_indication" class="form-label">Clinical Indication <span class="text-danger">*</span></label>
+                        <textarea name="clinical_indication" id="clinical_indication" class="form-control" rows="3" 
+                                  placeholder="Why is this X-ray needed? What are you looking for?" required>{{ form.clinical_indication.value|default:'' }}</textarea>
+                        <div class="form-text">Describe the clinical question or reason for this X-ray.</div>
+                        {% if form.clinical_indication.errors %}
+                        <div class="invalid-feedback d-block">{{ form.clinical_indication.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="clinical_history" class="form-label">Clinical History</label>
+                        <textarea name="clinical_history" id="clinical_history" class="form-control" rows="3" 
+                                  placeholder="Relevant patient history, symptoms, previous findings...">{{ form.clinical_history.value|default:'' }}</textarea>
+                        <div class="form-text">Provide relevant patient history to aid AI analysis.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">Additional Notes</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="2" 
+                                  placeholder="Any additional notes or instructions...">{{ form.notes.value|default:'' }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Create Study
+                        </button>
+                        <a href="{% url 'xray:dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>Instructions</h5>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Select the patient for this X-ray study</li>
+                    <li class="mb-2">Choose the body region and view type</li>
+                    <li class="mb-2">Describe the clinical indication clearly</li>
+                    <li class="mb-2">After creating, upload X-ray images</li>
+                    <li class="mb-2">Request AI analysis for preliminary findings</li>
+                    <li>Create and verify the final report</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-info-subtle">
+                <h5 class="card-title mb-0 text-info"><i class="bi bi-robot me-2"></i>AI Analysis</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-secondary mb-0">
+                    After uploading X-ray images, you can request AI-powered analysis using Gemini 2.0 Flash. 
+                    The AI will provide preliminary findings, technical assessment, and red flags to assist 
+                    the reporting physician.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

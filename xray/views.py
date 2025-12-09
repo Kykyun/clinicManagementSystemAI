@@ -84,14 +84,17 @@ def xray_detail(request, pk):
     
     image_form = XrayImageForm()
     document_form = XrayDocumentForm()
-    report_form = XrayReportForm(instance=report) if report else XrayReportForm()
     
-    if ai_analysis:
+    if report:
+        report_form = XrayReportForm(instance=report)
+    elif ai_analysis:
         report_form = XrayReportForm(initial={
             'findings': ai_analysis.findings,
             'impression': ai_analysis.impression,
             'recommendations': ai_analysis.recommendations,
         })
+    else:
+        report_form = XrayReportForm()
     
     context = {
         'study': study,
