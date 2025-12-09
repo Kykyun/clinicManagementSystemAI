@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block title %}X-Ray Dashboard{% endblock %}
+{% block page_title %}X-Ray Studies{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">X-Ray Dashboard</h1>
+        <p class="text-secondary">Manage and review X-ray studies</p>
+    </div>
+    <div>
+        <a href="{% url 'xray:new' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> New X-Ray Study
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="stat-value mb-0">{{ pending_count }}</h3>
+                        <p class="stat-label text-secondary mb-0">Pending Review</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="stat-value mb-0">{{ ai_analyzed_count }}</h3>
+                        <p class="stat-label text-secondary mb-0">AI Analyzed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="stat-value mb-0">{{ urgent_count }}</h3>
+                        <p class="stat-label text-secondary mb-0">Urgent Pending</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h5 class="card-title mb-0"><i class="bi bi-x-ray me-2"></i>X-Ray Studies</h5>
+            <form method="get" class="d-flex gap-2 flex-wrap">
+                <input type="text" name="search" class="form-control" placeholder="Search patient..." 
+                       value="{{ search }}" style="max-width: 200px;">
+                <select name="status" class="form-select" style="max-width: 150px;">
+                    <option value="">All Status</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="ai_analyzed" {% if status_filter == 'ai_analyzed' %}selected{% endif %}>AI Analyzed</option>
+                    <option value="reported" {% if status_filter == 'reported' %}selected{% endif %}>Reported</option>
+                    <option value="verified" {% if status_filter == 'verified' %}selected{% endif %}>Verified</option>
+                </select>
+                <select name="priority" class="form-select" style="max-width: 130px;">
+                    <option value="">All Priority</option>
+                    <option value="routine" {% if priority_filter == 'routine' %}selected{% endif %}>Routine</option>
+                    <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                    <option value="stat" {% if priority_filter == 'stat' %}selected{% endif %}>STAT</option>
+                </select>
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                {% if search or status_filter or priority_filter %}
+                <a href="{% url 'xray:dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x"></i> Clear
+                </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if studies %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>Body Region</th>
+                        <th>View</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Doctor</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for study in studies %}
+                    <tr>
+                        <td>{{ study.study_date|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <a href="{% url 'patients:patient_detail' study.patient.id %}">
+                                <strong>{{ study.patient.name }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ study.get_body_region_display }}</td>
+                        <td>{{ study.get_view_type_display }}</td>
+                        <td>
+                            {% if study.priority == 'stat' %}
+                            <span class="badge bg-danger">STAT</span>
+                            {% elif study.priority == 'urgent' %}
+                            <span class="badge bg-warning text-dark">Urgent</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Routine</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if study.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif study.status == 'in_progress' %}
+                            <span class="badge bg-info">In Progress</span>
+                            {% elif study.status == 'ai_analyzed' %}
+                            <span class="badge bg-primary">AI Analyzed</span>
+                            {% elif study.status == 'reported' %}
+                            <span class="badge bg-success">Reported</span>
+                            {% elif study.status == 'verified' %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Verified</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ study.requesting_doctor.get_full_name|default:"-" }}</td>
+                        <td>
+                            <a href="{% url 'xray:detail' study.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-secondary">
+            <i class="bi bi-x-ray fs-1"></i>
+            <p class="mt-2 mb-0">No X-ray studies found</p>
+            <a href="{% url 'xray:new' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-lg"></i> Create New Study
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.stat-card { border: none; }
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.stat-value { font-size: 1.75rem; font-weight: 600; }
+.stat-label { font-size: 0.875rem; }
+</style>
+{% endblock %}

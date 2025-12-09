@@ -82,6 +82,12 @@
             <i class="bi bi-calendar-check"></i>
             <span>Appointments</span>
         </a>
+        {% if user.role == 'admin' or user.role == 'doctor' or user.role == 'nurse' %}
+        <a href="{% url 'xray:dashboard' %}" class="nav-link {% if request.resolver_match.app_name == 'xray' %}active{% endif %}" title="X-Ray">
+            <i class="bi bi-x-ray"></i>
+            <span>X-Ray</span>
+        </a>
+        {% endif %}
         
         <div class="nav-section">Finance</div>
         <a href="{% url 'finance:invoice_list' %}" class="nav-link {% if 'invoice' in request.resolver_match.url_name and request.resolver_match.app_name == 'finance' %}active{% endif %}" title="Invoices">

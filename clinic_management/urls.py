@@ -29,6 +29,7 @@ urlpatterns = [
     path('setup/', include('setup_app.urls')),
     path('einvoice/', include('einvoice.urls')),
     path('ai/', include('ai.urls')),
+    path('xray/', include('xray.urls')),
 ]
 
 if settings.DEBUG:
