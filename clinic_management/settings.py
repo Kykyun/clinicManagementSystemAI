@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'setup_app',
     'einvoice',
     'ai',
+    'xray',
 ]
 
 MIDDLEWARE = [
